@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL Fundamentals - SQL Mastery</title>
+    <title>SQL Fundamentals - Query Ground</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="../css/styles.css" rel="stylesheet" />
@@ -16,7 +16,7 @@
             <span></span>
             <span></span>
         </div>
-        <div class="title">SQL Mastery</div>
+        <div class="title">Query Ground</div>
     </div>
     
     <!-- Sidebar -->
@@ -381,13 +381,15 @@ ORDER BY
     </script>
     
     <!-- Load DuckDB using UMD bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-browser-blocking.js"></script>
-    <script>
-        // DuckDB is now available globally
-        window.duckdb = duckdb;
-        window.duckdbLoaded = true;
-        console.log('✅ DuckDB loaded');
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-browser-blocking.js" onload="
+        if (typeof duckdb !== 'undefined') {
+            window.duckdb = duckdb;
+            window.duckdbLoaded = true;
+            console.log('✅ DuckDB loaded');
+        } else {
+            console.error('❌ DuckDB failed to load');
+        }
+    "></script>
     
     <!-- Load app scripts after libraries -->
     <script src="../js/common.js"></script>

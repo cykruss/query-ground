@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML Engineer Focus - SQL Mastery</title>
+    <title>ML Engineer Focus - Query Ground</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link href="../css/styles.css" rel="stylesheet" />
 </head>
 <body>
@@ -16,7 +15,7 @@
             <span></span>
             <span></span>
         </div>
-        <div class="title">SQL Mastery</div>
+        <div class="title">Query Ground</div>
     </div>
     
     <!-- Sidebar -->
@@ -241,9 +240,32 @@ FROM orders;</code></pre>
         </div>
     </div>
     <button class="reference-toggle" onclick="toggleReference()" title="Toggle Reference Tables">📚</button>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    
+    <!-- Load Monaco Editor -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+    <script>
+        require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+        
+        require(['vs/editor/editor.main'], function() {
+            window.monaco = monaco;
+            window.monacoLoaded = true;
+            console.log('✅ Monaco Editor loaded');
+        });
+    </script>
+    
+    <!-- Load DuckDB using UMD bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-browser-blocking.js" onload="
+        if (typeof duckdb !== 'undefined') {
+            window.duckdb = duckdb;
+            window.duckdbLoaded = true;
+            console.log('✅ DuckDB loaded');
+        } else {
+            console.error('❌ DuckDB failed to load');
+        }
+    "></script>
+    
     <script src="../js/common.js"></script>
     <script src="../js/problem-renderer.js"></script>
+    <script src="../js/sql-executor.js"></script>
 </body>
 </html>
