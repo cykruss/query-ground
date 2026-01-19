@@ -62,27 +62,10 @@
     </div>
     
     <!-- Main Content -->
-    <div class="main has-reference reference-expanded">
+    <div class="main">
         <div class="section-header">
             <h1 class="section-title">SQL Fundamentals</h1>
             <p class="section-subtitle">Building blocks of querying data</p>
-        </div>
-        
-        <div class="card">
-            <h2 class="card-title">
-                <span class="card-icon">💾</span>
-                What is SQL?
-            </h2>
-            <div class="card-content">
-                <p>SQL (Structured Query Language) is the standard language for interacting with relational databases. For ML engineers, SQL is essential for:</p>
-                <ul>
-                    <li>Extracting training data from production databases</li>
-                    <li>Feature engineering through data transformations</li>
-                    <li>Data quality checks and validation</li>
-                    <li>Analyzing model performance metrics</li>
-                    <li>Joining datasets from multiple sources</li>
-                </ul>
-            </div>
         </div>
         
         <div class="card">
@@ -380,16 +363,13 @@ ORDER BY
         });
     </script>
     
-    <!-- Load DuckDB using UMD bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-browser-blocking.js" onload="
-        if (typeof duckdb !== 'undefined') {
-            window.duckdb = duckdb;
-            window.duckdbLoaded = true;
-            console.log('✅ DuckDB loaded');
-        } else {
-            console.error('❌ DuckDB failed to load');
-        }
-    "></script>
+    <!-- Load DuckDB as ES Module -->
+    <script type="module">
+        import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
+        window.duckdb = duckdb;
+        window.duckdbLoaded = true;
+        console.log('✅ DuckDB loaded');
+    </script>
     
     <!-- Load app scripts after libraries -->
     <script src="../js/common.js"></script>

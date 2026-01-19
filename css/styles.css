@@ -155,16 +155,26 @@ body {
 
 /* Main Content */
 .main {
-    margin-left: 70px;
+    margin-left: auto;
+    margin-right: auto;
     margin-top: 70px;
-    margin-right: 0;
-    padding: 40px;
-    transition: margin-left 0.3s ease, margin-right 0.3s ease;
+    padding: 20px;
+    padding-left: 90px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     max-width: 1200px;
+    width: 100%;
 }
 
 .sidebar.expanded ~ .main {
-    margin-left: 280px;
+    padding-left: 300px;
+}
+
+/* When SQL console is expanded, compress main content */
+.main.console-open {
+    width: 50%;
+    margin-right: 50%;
+    padding-right: 20px;
+    max-width: none;
 }
 
 .main.has-reference {
@@ -231,6 +241,7 @@ body {
 .card-content {
     color: var(--text-secondary);
     line-height: 1.8;
+    overflow-x: auto;
 }
 
 /* Code blocks */
@@ -519,6 +530,7 @@ tr:hover {
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 16px;
+    overflow-x: auto;
 }
 
 .result-label {

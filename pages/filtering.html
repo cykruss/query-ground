@@ -448,16 +448,13 @@ WHERE
         });
     </script>
     
-    <!-- Load DuckDB using UMD bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-browser-blocking.js" onload="
-        if (typeof duckdb !== 'undefined') {
-            window.duckdb = duckdb;
-            window.duckdbLoaded = true;
-            console.log('✅ DuckDB loaded');
-        } else {
-            console.error('❌ DuckDB failed to load');
-        }
-    "></script>
+    <!-- Load DuckDB as ES Module -->
+    <script type="module">
+        import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
+        window.duckdb = duckdb;
+        window.duckdbLoaded = true;
+        console.log('✅ DuckDB loaded');
+    </script>
     
     <script src="../js/common.js"></script>
     <script src="../js/problem-renderer.js"></script>

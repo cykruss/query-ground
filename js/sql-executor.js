@@ -263,12 +263,15 @@ class SQLConsole {
 
     toggle() {
         const console = document.getElementById('sql-console');
+        const main = document.querySelector('.main');
         this.isExpanded = !this.isExpanded;
         
         if (this.isExpanded) {
             console.classList.add('expanded');
+            if (main) main.classList.add('console-open');
         } else {
             console.classList.remove('expanded');
+            if (main) main.classList.remove('console-open');
         }
     }
 
@@ -301,8 +304,28 @@ class SQLConsole {
             await this.db.terminate();
         }
         
-        // Reinitialize
-        await this.init();
+        // Reinitialize database (but not editor)
+        try {
+            const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+            const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+            
+            const worker_url = URL.createObjectURL(
+                new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
+            );
+            const worker = new Worker(worker_url);
+            const logger = new duckdb.ConsoleLogger();
+            
+            this.db = new duckdb.AsyncDuckDB(logger, worker);
+            await this.db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+            this.conn = await this.db.connect();
+            
+            // Recreate sample data
+            await this.setupSampleData();
+        } catch (error) {
+            console.error('❌ Failed to reset database:', error);
+            this.showError('Failed to reset database. Please refresh the page.');
+            return;
+        }
         
         // Clear results and show success message
         const resultContainer = document.getElementById('sql-result');
