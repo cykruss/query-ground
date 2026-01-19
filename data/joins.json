@@ -1,0 +1,53 @@
+{
+  "section": "Joins",
+  "problems": [
+    {
+      "difficulty": "Easy",
+      "icon": "🔗",
+      "title": "Basic INNER JOIN",
+      "description": "Get a list of all users who have placed orders, along with their order details.",
+      "solution": "SELECT \n    u.name,\n    u.country,\n    o.product,\n    o.amount,\n    o.order_date\nFROM users u\nINNER JOIN orders o ON u.user_id = o.user_id\nORDER BY o.order_date;",
+      "explanation": "INNER JOIN returns only rows where there's a match in both tables. Users without orders and orders without matching users are excluded."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "💎",
+      "title": "High-Value Premium User Orders",
+      "description": "Find recent high-value orders (>$300) for premium users who signed up after January 2024.",
+      "solution": "SELECT \n    u.name,\n    u.premium,\n    o.product,\n    o.amount,\n    o.order_date\nFROM users u\nINNER JOIN orders o ON u.user_id = o.user_id\nWHERE \n    u.premium = true\n    AND u.signup_date >= '2024-01-01'\n    AND o.amount > 300\n    AND o.order_date >= '2024-03-01'\nORDER BY o.amount DESC;",
+      "explanation": "Combines JOIN with multiple WHERE conditions to create a specific segment. Useful for building churn prediction models targeting high-value customers."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "👥",
+      "title": "Self-JOIN for User Matching",
+      "description": "Find pairs of users from the same country with similar ages (within 3 years) for A/B test matching.",
+      "solution": "SELECT \n    u1.name AS user1_name,\n    u1.age AS user1_age,\n    u2.name AS user2_name,\n    u2.age AS user2_age,\n    u1.country,\n    ABS(u1.age - u2.age) AS age_difference\nFROM users u1\nINNER JOIN users u2 \n    ON u1.country = u2.country\n    AND u1.user_id < u2.user_id\nWHERE ABS(u1.age - u2.age) <= 3\nORDER BY u1.country, age_difference;",
+      "explanation": "Self-JOIN compares a table to itself. Using u1.user_id < u2.user_id prevents duplicate pairs and self-matching. Perfect for creating matched treatment/control groups in experiments."
+    },
+    {
+      "difficulty": "Easy",
+      "icon": "📊",
+      "title": "LEFT JOIN for Complete User Data",
+      "description": "Get all users and their order counts, including users who haven't ordered yet.",
+      "solution": "SELECT \n    u.user_id,\n    u.name,\n    u.country,\n    COUNT(o.order_id) AS order_count,\n    COALESCE(SUM(o.amount), 0) AS total_spent\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.name, u.country\nORDER BY order_count DESC;",
+      "explanation": "LEFT JOIN keeps ALL users, even those without orders. COALESCE handles NULL values for users with no orders. Essential for feature engineering where you need every entity."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "🎯",
+      "title": "Identify Inactive Users",
+      "description": "Find users who signed up but never placed an order (for re-engagement campaigns).",
+      "solution": "SELECT \n    u.user_id,\n    u.name,\n    u.signup_date,\n    CURRENT_DATE - u.signup_date AS days_since_signup\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nWHERE o.order_id IS NULL\nORDER BY days_since_signup DESC;",
+      "explanation": "LEFT JOIN followed by WHERE column IS NULL finds unmatched rows. This identifies users in the left table (users) with no corresponding rows in the right table (orders)."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "🔬",
+      "title": "Comprehensive User Profile with Multiple Joins",
+      "description": "Build a complete user profile joining orders, support tickets, and login activity for churn prediction features.",
+      "solution": "SELECT \n    u.user_id,\n    u.name,\n    u.country,\n    u.premium,\n    COUNT(DISTINCT o.order_id) AS total_orders,\n    COUNT(DISTINCT st.ticket_id) AS support_tickets,\n    COUNT(DISTINCT la.login_id) AS total_logins,\n    MAX(o.order_date) AS last_order_date,\n    MAX(la.login_date) AS last_login_date,\n    COALESCE(SUM(o.amount), 0) AS lifetime_value\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nLEFT JOIN support_tickets st ON u.user_id = st.user_id\nLEFT JOIN login_activity la ON u.user_id = la.user_id\nGROUP BY u.user_id, u.name, u.country, u.premium\nORDER BY lifetime_value DESC;",
+      "explanation": "Multiple LEFT JOINs preserve all users while aggregating data from multiple sources. Use COUNT(DISTINCT ...) to avoid double-counting from JOIN multiplication. Creates a comprehensive feature set for ML models."
+    }
+  ]
+}

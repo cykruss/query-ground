@@ -1,0 +1,53 @@
+{
+  "section": "Filtering Data",
+  "problems": [
+    {
+      "difficulty": "Easy",
+      "icon": "🔍",
+      "title": "Find Users Over 30",
+      "description": "Retrieve all users who are older than 30 years.",
+      "solution": "SELECT name, age, country\nFROM users\nWHERE age > 30;",
+      "explanation": "Simple WHERE clause with a comparison operator filters rows based on a single condition."
+    },
+    {
+      "difficulty": "Easy",
+      "icon": "🌍",
+      "title": "Users from USA",
+      "description": "Get all users who are from the USA.",
+      "solution": "SELECT name, age, country\nFROM users\nWHERE country = 'USA';",
+      "explanation": "Equality operator (=) checks for exact matches in the country column."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "🎯",
+      "title": "Premium Users from Specific Countries",
+      "description": "Find premium users who are from either USA or UK.",
+      "solution": "SELECT name, country, premium\nFROM users\nWHERE premium = true \n  AND country IN ('USA', 'UK');",
+      "explanation": "Combines AND for multiple conditions and IN operator for checking against multiple values efficiently."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "📅",
+      "title": "Recent Signups",
+      "description": "Find users who signed up in February 2024.",
+      "solution": "SELECT name, signup_date\nFROM users\nWHERE signup_date BETWEEN '2024-02-01' AND '2024-02-29';",
+      "explanation": "BETWEEN provides an inclusive range for date filtering, making queries more readable."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "🔬",
+      "title": "Complex User Segmentation",
+      "description": "Find users who are either (from USA/Canada and age 25-30) OR (from UK and premium), signed up after Feb 1, and name doesn't start with 'B'.",
+      "solution": "SELECT \n    name,\n    age,\n    country,\n    premium,\n    signup_date\nFROM users\nWHERE \n    (\n        (country IN ('USA', 'Canada') AND age BETWEEN 25 AND 30)\n        OR\n        (country = 'UK' AND premium = true)\n    )\n    AND signup_date >= '2024-02-01'\n    AND name NOT LIKE 'B%';",
+      "explanation": "Complex nested conditions with parentheses control evaluation order. Combines multiple operators (IN, BETWEEN, AND, OR, NOT LIKE) to create precise user segments for ML training datasets."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "🧹",
+      "title": "Data Quality Filter",
+      "description": "Create a clean dataset by filtering users with valid data: non-null email and age, realistic age range (0-120), valid country, name longer than 1 character, and signups after Jan 1, 2024.",
+      "solution": "SELECT \n    name,\n    age,\n    email,\n    country,\n    signup_date\nFROM users\nWHERE \n    email IS NOT NULL\n    AND age IS NOT NULL\n    AND age > 0\n    AND age < 120\n    AND country IS NOT NULL\n    AND LENGTH(name) > 1\n    AND signup_date >= '2024-01-01';",
+      "explanation": "Comprehensive NULL handling and validation checks ensure data quality for ML training. Each condition filters out different types of data issues."
+    }
+  ]
+}

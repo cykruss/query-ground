@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Engineer Focus - SQL Mastery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="../css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="burger" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">SQL Mastery</div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-items">
+            <a href="../index.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">Home</div>
+            </a>
+            <a href="fundamentals.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">Fundamentals</div>
+            </a>
+            <a href="filtering.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-text">Filtering</div>
+            </a>
+            <a href="aggregation.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📊</div>
+                <div class="nav-text">Aggregation</div>
+            </a>
+            <a href="joins.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔗</div>
+                <div class="nav-text">Joins</div>
+            </a>
+            <a href="subqueries.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🎯</div>
+                <div class="nav-text">Subqueries</div>
+            </a>
+            <a href="window-functions.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📈</div>
+                <div class="nav-text">Window Functions</div>
+            </a>
+            <a href="advanced.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">⚡</div>
+                <div class="nav-text">Advanced</div>
+            </a>
+            <a href="ml-focus.html" class="nav-item active" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-text">ML Focus</div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main">
+        <div class="section-header">
+            <h1 class="section-title">ML Engineer Focus</h1>
+            <p class="section-subtitle">SQL patterns for machine learning workflows</p>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">🤖</span>
+                Feature Engineering in SQL
+            </h2>
+            <div class="card-content">
+                <p>Create ML features directly in SQL:</p>
+                
+                <pre><code class="language-sql">-- User behavior features
+WITH user_features AS (
+    SELECT 
+        u.user_id,
+        u.age,
+        u.country,
+        COUNT(o.order_id) as order_count,
+        SUM(o.amount) as lifetime_value,
+        AVG(o.amount) as avg_order_value,
+        MAX(o.order_date) as last_order_date,
+        DATEDIFF(CURRENT_DATE, MAX(o.order_date)) as days_since_last_order,
+        DATEDIFF(MAX(o.order_date), MIN(o.order_date)) as customer_lifetime_days
+    FROM users u
+    LEFT JOIN orders o ON u.user_id = o.user_id
+    GROUP BY u.user_id, u.age, u.country
+)
+SELECT *,
+    lifetime_value / NULLIF(customer_lifetime_days, 0) as daily_value
+FROM user_features;</code></pre>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">📊</span>
+                Time-Based Features
+            </h2>
+            <div class="card-content">
+                <p>Extract temporal patterns:</p>
+                
+                <pre><code class="language-sql">-- Time-based aggregations
+SELECT 
+    user_id,
+    COUNT(CASE WHEN order_date >= CURRENT_DATE - 7 THEN 1 END) as orders_last_7d,
+    COUNT(CASE WHEN order_date >= CURRENT_DATE - 30 THEN 1 END) as orders_last_30d,
+    AVG(CASE WHEN order_date >= CURRENT_DATE - 30 THEN amount END) as avg_amount_30d,
+    EXTRACT(HOUR FROM order_timestamp) as hour_of_day,
+    EXTRACT(DOW FROM order_date) as day_of_week
+FROM orders
+GROUP BY user_id;</code></pre>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">🎯</span>
+                Train/Test Split
+            </h2>
+            <div class="card-content">
+                <p>Create temporal splits for time-series data:</p>
+                
+                <pre><code class="language-sql">-- Time-based split
+SELECT *,
+    CASE 
+        WHEN order_date < '2024-01-01' THEN 'train'
+        WHEN order_date < '2024-03-01' THEN 'validation'
+        ELSE 'test'
+    END as dataset_split
+FROM user_features;
+
+-- Random split (use with caution for time-series)
+SELECT *,
+    CASE 
+        WHEN MOD(user_id, 10) < 7 THEN 'train'
+        WHEN MOD(user_id, 10) < 9 THEN 'validation'
+        ELSE 'test'
+    END as dataset_split
+FROM user_features;</code></pre>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">🔍</span>
+                Data Quality Checks
+            </h2>
+            <div class="card-content">
+                <p>Validate data before training:</p>
+                
+                <pre><code class="language-sql">-- Check for missing values
+SELECT 
+    COUNT(*) as total_rows,
+    SUM(CASE WHEN age IS NULL THEN 1 ELSE 0 END) as missing_age,
+    SUM(CASE WHEN email IS NULL THEN 1 ELSE 0 END) as missing_email
+FROM users;
+
+-- Check for duplicates
+SELECT user_id, COUNT(*) as duplicate_count
+FROM users
+GROUP BY user_id
+HAVING COUNT(*) > 1;
+
+-- Check for outliers
+SELECT 
+    MIN(amount) as min_amount,
+    MAX(amount) as max_amount,
+    AVG(amount) as avg_amount,
+    STDDEV(amount) as stddev_amount
+FROM orders;</code></pre>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">💡</span>
+                Best Practices for ML Workflows
+            </h2>
+            <div class="card-content">
+                <ul>
+                    <li>Use CTEs to organize feature engineering steps</li>
+                    <li>Document your features with clear column names</li>
+                    <li>Handle NULL values explicitly (COALESCE, NULLIF)</li>
+                    <li>Be mindful of data leakage in time-series</li>
+                    <li>Version your feature queries like code</li>
+                    <li>Test queries on small samples first</li>
+                    <li>Use window functions for sequence features</li>
+                    <li>Consider creating views for reusable feature sets</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Practice Problems Section -->
+        <div id="problems-container" data-json-path="../data/ml-focus.json"></div>
+        
+        <div class="nav-buttons">
+            <a href="advanced.html" class="nav-btn" style="text-decoration: none;">← Advanced</a>
+            <a href="../index.html" class="nav-btn" style="text-decoration: none;">Back to Home</a>
+        </div>
+    </div>
+    
+    <!-- Reference Panel -->
+    <div class="reference-panel" id="reference-panel">
+        <h3 class="reference-title">📋 Sample Data Reference</h3>
+        <div class="reference-table-section">
+            <h4>users table</h4>
+            <table>
+                <thead>
+                    <tr><th>user_id</th><th>name</th><th>age</th><th>country</th><th>signup_date</th><th>premium</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>Alice</td><td>28</td><td>USA</td><td>2024-01-15</td><td>true</td></tr>
+                    <tr><td>2</td><td>Bob</td><td>34</td><td>UK</td><td>2024-02-20</td><td>false</td></tr>
+                    <tr><td>3</td><td>Charlie</td><td>25</td><td>USA</td><td>2024-03-10</td><td>true</td></tr>
+                    <tr><td>4</td><td>Diana</td><td>31</td><td>Canada</td><td>2024-01-22</td><td>true</td></tr>
+                    <tr><td>5</td><td>Eve</td><td>29</td><td>UK</td><td>2024-04-05</td><td>false</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="reference-table-section">
+            <h4>orders table</h4>
+            <table>
+                <thead>
+                    <tr><th>order_id</th><th>user_id</th><th>product</th><th>amount</th><th>order_date</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>101</td><td>1</td><td>Laptop</td><td>1200</td><td>2024-02-01</td></tr>
+                    <tr><td>102</td><td>1</td><td>Mouse</td><td>25</td><td>2024-02-15</td></tr>
+                    <tr><td>103</td><td>2</td><td>Keyboard</td><td>75</td><td>2024-03-01</td></tr>
+                    <tr><td>104</td><td>3</td><td>Monitor</td><td>350</td><td>2024-03-20</td></tr>
+                    <tr><td>105</td><td>3</td><td>Laptop</td><td>1500</td><td>2024-04-10</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <button class="reference-toggle" onclick="toggleReference()" title="Toggle Reference Tables">📚</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/problem-renderer.js"></script>
+</body>
+</html>

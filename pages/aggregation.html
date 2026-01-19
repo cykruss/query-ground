@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggregation & Grouping - SQL Mastery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="../css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="burger" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">SQL Mastery</div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-items">
+            <a href="../index.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">Home</div>
+            </a>
+            <a href="fundamentals.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">Fundamentals</div>
+            </a>
+            <a href="filtering.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-text">Filtering</div>
+            </a>
+            <a href="aggregation.html" class="nav-item active" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📊</div>
+                <div class="nav-text">Aggregation</div>
+            </a>
+            <a href="joins.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔗</div>
+                <div class="nav-text">Joins</div>
+            </a>
+            <a href="subqueries.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🎯</div>
+                <div class="nav-text">Subqueries</div>
+            </a>
+            <a href="window-functions.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📈</div>
+                <div class="nav-text">Window Functions</div>
+            </a>
+            <a href="advanced.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">⚡</div>
+                <div class="nav-text">Advanced</div>
+            </a>
+            <a href="ml-focus.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-text">ML Focus</div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main">
+        <div class="section-header">
+            <h1 class="section-title">Aggregation & Grouping</h1>
+            <p class="section-subtitle">Summarizing data for insights</p>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">📊</span>
+                Aggregate Functions
+            </h2>
+            <div class="card-content">
+                <p>Aggregate functions perform calculations across multiple rows and return a single value.</p>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic Aggregations</h3>
+                <pre><code class="language-sql">-- COUNT: Number of rows
+SELECT COUNT(*) AS total_users
+FROM users;
+-- Result: 5 (counts all rows including NULLs)
+
+-- COUNT with column name (skips NULLs)
+SELECT COUNT(email) AS users_with_email
+FROM users;
+-- Only counts non-NULL emails
+
+-- COUNT DISTINCT: Unique values
+SELECT COUNT(DISTINCT country) AS unique_countries
+FROM users;
+-- Result: 3 (USA, UK, Canada)
+
+-- Basic statistics
+SELECT 
+    COUNT(*) AS total_orders,      -- Total number of orders
+    SUM(amount) AS total_revenue,  -- Add up all amounts
+    AVG(amount) AS avg_order_value, -- Mean of amounts
+    MIN(amount) AS smallest_order,  -- Lowest amount
+    MAX(amount) AS largest_order    -- Highest amount
+FROM orders;
+-- Result: 5, 3150, 630, 25, 1500</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Aggregations with Conditions</h3>
+                <pre><code class="language-sql">-- COUNT with WHERE
+SELECT COUNT(*) AS premium_users
+FROM users
+WHERE premium = true;
+-- Result: 3
+
+-- Conditional aggregations using CASE
+SELECT 
+    COUNT(*) AS total_users,
+    -- Count only premium users
+    COUNT(CASE WHEN premium = true THEN 1 END) AS premium_count,
+    -- Count only USA users
+    COUNT(CASE WHEN country = 'USA' THEN 1 END) AS usa_count,
+    -- Average age of premium users only
+    AVG(CASE WHEN premium = true THEN age END) AS avg_premium_age,
+    -- Sum orders over $500
+    SUM(CASE WHEN amount > 500 THEN amount ELSE 0 END) AS high_value_revenue
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id;
+
+-- Multiple aggregations with different filters
+SELECT 
+    AVG(age) AS overall_avg_age,
+    AVG(CASE WHEN country = 'USA' THEN age END) AS usa_avg_age,
+    AVG(CASE WHEN country = 'UK' THEN age END) AS uk_avg_age
+FROM users;</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Advanced Statistical Aggregations</h3>
+                <pre><code class="language-sql">-- Statistical measures for feature engineering
+SELECT 
+    -- Central tendency
+    COUNT(*) AS n_orders,
+    AVG(amount) AS mean_amount,
+    -- Median using percentile_cont
+    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount) AS median_amount,
+    
+    -- Dispersion measures
+    STDDEV(amount) AS std_deviation,
+    VARIANCE(amount) AS variance,
+    MAX(amount) - MIN(amount) AS range_amount,
+    
+    -- Percentiles for outlier detection
+    PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY amount) AS q1,
+    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY amount) AS q3,
+    
+    -- Coefficient of variation (relative variability)
+    CASE 
+        WHEN AVG(amount) > 0 THEN STDDEV(amount) / AVG(amount)
+        ELSE NULL
+    END AS coefficient_of_variation,
+    
+    -- Distribution shape
+    MIN(amount) AS min_val,
+    MAX(amount) AS max_val
+FROM orders;
+
+-- These metrics are useful for:
+-- 1. Understanding data distribution
+-- 2. Detecting outliers (using IQR method)
+-- 3. Feature scaling decisions
+-- 4. Identifying skewed distributions</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>Calculate statistical summaries in SQL to understand your feature distributions before modeling. Check for outliers, skewness, and missing values.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">📦</span>
+                GROUP BY Fundamentals
+            </h2>
+            <div class="card-content">
+                <p>GROUP BY organizes rows into groups based on column values, then applies aggregate functions to each group.</p>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Single Column Grouping</h3>
+                <pre><code class="language-sql">-- Count users per country
+-- GROUP BY creates one row per unique country value
+SELECT 
+    country,
+    COUNT(*) AS user_count
+FROM users
+GROUP BY country;
+-- Result:
+-- USA, 2
+-- UK, 2
+-- Canada, 1
+
+-- Average age per country
+SELECT 
+    country,
+    AVG(age) AS avg_age,
+    COUNT(*) AS count
+FROM users
+GROUP BY country
+ORDER BY avg_age DESC;  -- ORDER BY comes after GROUP BY</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Multi-Column Grouping</h3>
+                <pre><code class="language-sql">-- Group by multiple columns
+-- Creates one row per unique combination of country AND premium
+SELECT 
+    country,
+    premium,
+    COUNT(*) AS user_count,
+    AVG(age) AS avg_age
+FROM users
+GROUP BY country, premium  -- Both columns must be in GROUP BY
+ORDER BY country, premium;
+-- Result shows count and avg age for each country-premium combination
+
+-- Group with calculated columns
+SELECT 
+    country,
+    -- Create age buckets
+    CASE 
+        WHEN age < 30 THEN 'Young'
+        ELSE 'Older'
+    END AS age_group,
+    COUNT(*) AS count
+FROM users
+GROUP BY 
+    country, 
+    CASE WHEN age < 30 THEN 'Young' ELSE 'Older' END;
+-- Can use column alias or repeat the expression
+
+-- Aggregating order data by user
+SELECT 
+    user_id,
+    COUNT(*) AS order_count,
+    SUM(amount) AS total_spent,
+    AVG(amount) AS avg_order_value,
+    MIN(order_date) AS first_order,
+    MAX(order_date) AS last_order
+FROM orders
+GROUP BY user_id;</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex Grouping with Features</h3>
+                <pre><code class="language-sql">-- Create comprehensive user features
+SELECT 
+    u.user_id,
+    u.name,
+    u.country,
+    u.premium,
+    
+    -- Order statistics
+    COUNT(o.order_id) AS total_orders,
+    COALESCE(SUM(o.amount), 0) AS lifetime_value,
+    COALESCE(AVG(o.amount), 0) AS avg_order_value,
+    COALESCE(STDDEV(o.amount), 0) AS order_value_std,
+    
+    -- Time-based features
+    MIN(o.order_date) AS first_order_date,
+    MAX(o.order_date) AS last_order_date,
+    MAX(o.order_date) - MIN(o.order_date) AS days_between_first_last,
+    
+    -- Behavioral features
+    COUNT(DISTINCT o.product) AS unique_products,
+    SUM(CASE WHEN o.amount > 500 THEN 1 ELSE 0 END) AS high_value_orders,
+    SUM(CASE WHEN o.amount < 100 THEN 1 ELSE 0 END) AS low_value_orders,
+    
+    -- Recency, Frequency, Monetary (RFM)
+    CURRENT_DATE - MAX(o.order_date) AS days_since_last_order,
+    COUNT(o.order_id) AS frequency,
+    COALESCE(SUM(o.amount), 0) AS monetary_value,
+    
+    -- Advanced metrics
+    CASE 
+        WHEN COUNT(o.order_id) > 0 THEN
+            COALESCE(SUM(o.amount), 0) / COUNT(o.order_id)
+        ELSE 0
+    END AS calculated_avg
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id
+GROUP BY u.user_id, u.name, u.country, u.premium
+-- All non-aggregated columns must be in GROUP BY
+ORDER BY lifetime_value DESC;
+
+-- This creates a feature-rich dataset for customer segmentation
+-- or churn prediction models</code></pre>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">🎚️</span>
+                HAVING: Filtering Groups
+            </h2>
+            <div class="card-content">
+                <p>HAVING filters groups AFTER aggregation (WHERE filters rows BEFORE aggregation).</p>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic HAVING</h3>
+                <pre><code class="language-sql">-- Find countries with more than 1 user
+SELECT 
+    country,
+    COUNT(*) AS user_count
+FROM users
+GROUP BY country
+HAVING COUNT(*) > 1;  -- Filters AFTER grouping
+-- Result: USA (2), UK (2)
+-- Canada (1) is excluded
+
+-- This is different from WHERE!
+-- WHERE filters before grouping
+-- HAVING filters after grouping</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: HAVING with Multiple Conditions</h3>
+                <pre><code class="language-sql">-- Users with specific ordering patterns
+SELECT 
+    user_id,
+    COUNT(*) AS order_count,
+    SUM(amount) AS total_spent,
+    AVG(amount) AS avg_order
+FROM orders
+GROUP BY user_id
+HAVING 
+    COUNT(*) >= 2            -- At least 2 orders
+    AND SUM(amount) > 500    -- Spent over $500
+    AND AVG(amount) > 200;   -- Average order over $200
+-- Only returns users meeting ALL criteria
+
+-- Combining WHERE and HAVING
+SELECT 
+    country,
+    COUNT(*) AS user_count,
+    AVG(age) AS avg_age
+FROM users
+WHERE age > 25              -- Filter rows first (before grouping)
+GROUP BY country
+HAVING COUNT(*) > 1         -- Filter groups (after grouping)
+ORDER BY avg_age DESC;</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex HAVING Conditions</h3>
+                <pre><code class="language-sql">-- Find user segments with interesting characteristics
+SELECT 
+    country,
+    premium,
+    COUNT(*) AS segment_size,
+    AVG(age) AS avg_age,
+    STDDEV(age) AS age_std,
+    MIN(age) AS min_age,
+    MAX(age) AS max_age
+FROM users
+WHERE signup_date >= '2024-01-01'  -- Recent signups only
+GROUP BY country, premium
+HAVING 
+    COUNT(*) >= 2                   -- Statistically meaningful segment
+    AND AVG(age) BETWEEN 25 AND 35  -- Target age range
+    AND STDDEV(age) < 5             -- Homogeneous age group
+    AND MAX(age) - MIN(age) < 10    -- Limited age spread
+ORDER BY segment_size DESC, avg_age;
+
+-- Advanced: HAVING with subqueries
+SELECT 
+    country,
+    COUNT(*) AS user_count,
+    AVG(age) AS avg_age
+FROM users
+GROUP BY country
+HAVING AVG(age) > (
+    -- Only countries with above-average avg age
+    SELECT AVG(age) FROM users
+)
+ORDER BY avg_age DESC;
+
+-- This identifies high-value segments for targeted modeling</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>Use HAVING to filter out groups with insufficient data. For example, exclude users with fewer than 5 transactions to ensure reliable behavioral features.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Practice Problems Section -->
+        <div id="problems-container" data-json-path="../data/aggregation.json"></div>
+        
+        <div class="nav-buttons">
+            <a href="filtering.html" class="nav-btn" style="text-decoration: none;">← Filtering</a>
+            <a href="joins.html" class="nav-btn" style="text-decoration: none;">Next: Joins →</a>
+        </div>
+    </div>
+    
+    <!-- Reference Panel -->
+    <div class="reference-panel" id="reference-panel">
+        <h3 class="reference-title">📋 Sample Data Reference</h3>
+        <div class="reference-table-section">
+            <h4>users table</h4>
+            <table>
+                <thead>
+                    <tr><th>user_id</th><th>name</th><th>age</th><th>country</th><th>signup_date</th><th>premium</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>Alice</td><td>28</td><td>USA</td><td>2024-01-15</td><td>true</td></tr>
+                    <tr><td>2</td><td>Bob</td><td>34</td><td>UK</td><td>2024-02-20</td><td>false</td></tr>
+                    <tr><td>3</td><td>Charlie</td><td>25</td><td>USA</td><td>2024-03-10</td><td>true</td></tr>
+                    <tr><td>4</td><td>Diana</td><td>31</td><td>Canada</td><td>2024-01-22</td><td>true</td></tr>
+                    <tr><td>5</td><td>Eve</td><td>29</td><td>UK</td><td>2024-04-05</td><td>false</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="reference-table-section">
+            <h4>orders table</h4>
+            <table>
+                <thead>
+                    <tr><th>order_id</th><th>user_id</th><th>product</th><th>amount</th><th>order_date</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>101</td><td>1</td><td>Laptop</td><td>1200</td><td>2024-02-01</td></tr>
+                    <tr><td>102</td><td>1</td><td>Mouse</td><td>25</td><td>2024-02-15</td></tr>
+                    <tr><td>103</td><td>2</td><td>Keyboard</td><td>75</td><td>2024-03-01</td></tr>
+                    <tr><td>104</td><td>3</td><td>Monitor</td><td>350</td><td>2024-03-20</td></tr>
+                    <tr><td>105</td><td>3</td><td>Laptop</td><td>1500</td><td>2024-04-10</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <button class="reference-toggle" onclick="toggleReference()" title="Toggle Reference Tables">📚</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/problem-renderer.js"></script>
+</body>
+</html>

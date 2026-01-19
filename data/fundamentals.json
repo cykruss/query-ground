@@ -1,0 +1,91 @@
+{
+  "section": "SQL Fundamentals",
+  "problems": [
+    {
+      "difficulty": "Easy",
+      "icon": "📝",
+      "title": "Select All User Names",
+      "description": "Retrieve all user names from the users table.",
+      "solution": "SELECT name FROM users;",
+      "explanation": "Simple SELECT statement to retrieve a single column.",
+      "result": [
+        {"name": "Alice"},
+        {"name": "Bob"},
+        {"name": "Charlie"},
+        {"name": "Diana"},
+        {"name": "Eve"}
+      ]
+    },
+    {
+      "difficulty": "Easy",
+      "icon": "🎯",
+      "title": "Get Top 3 Youngest Users",
+      "description": "Find the 3 youngest users by sorting on age.",
+      "solution": "SELECT name, age\nFROM users\nORDER BY age ASC\nLIMIT 3;",
+      "explanation": "ORDER BY sorts the results, and LIMIT restricts to the first 3 rows.",
+      "result": [
+        {"name": "Charlie", "age": 25},
+        {"name": "Alice", "age": 28},
+        {"name": "Eve", "age": 29}
+      ]
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "🔢",
+      "title": "Calculate Age in Months",
+      "description": "For each user, show their name, age, and age in months (age * 12).",
+      "solution": "SELECT \n    name,\n    age,\n    age * 12 AS age_in_months\nFROM users;",
+      "explanation": "Use arithmetic operations and AS to create calculated columns with meaningful names.",
+      "result": [
+        {"name": "Alice", "age": 28, "age_in_months": 336},
+        {"name": "Bob", "age": 34, "age_in_months": 408},
+        {"name": "Charlie", "age": 25, "age_in_months": 300},
+        {"name": "Diana", "age": 31, "age_in_months": 372},
+        {"name": "Eve", "age": 29, "age_in_months": 348}
+      ]
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "🌍",
+      "title": "List Unique Countries",
+      "description": "Get a list of all unique countries from the users table.",
+      "solution": "SELECT DISTINCT country\nFROM users\nORDER BY country;",
+      "explanation": "DISTINCT removes duplicate values, showing only unique countries.",
+      "result": [
+        {"country": "Canada"},
+        {"country": "UK"},
+        {"country": "USA"}
+      ]
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "🎭",
+      "title": "Categorize Users by Age and Premium Status",
+      "description": "Create a report showing user names with age categories ('Young', 'Adult', 'Senior') and a premium label.",
+      "solution": "SELECT \n    name,\n    age,\n    CASE \n        WHEN age < 27 THEN 'Young'\n        WHEN age < 32 THEN 'Adult'\n        ELSE 'Senior'\n    END AS age_category,\n    CASE \n        WHEN premium = true THEN '⭐ Premium'\n        ELSE 'Standard'\n    END AS account_type\nFROM users\nORDER BY age;",
+      "explanation": "CASE statements create conditional logic for categorization, essential for creating features in ML pipelines.",
+      "result": [
+        {"name": "Charlie", "age": 25, "age_category": "Young", "account_type": "⭐ Premium"},
+        {"name": "Alice", "age": 28, "age_category": "Adult", "account_type": "⭐ Premium"},
+        {"name": "Eve", "age": 29, "age_category": "Adult", "account_type": "Standard"},
+        {"name": "Diana", "age": 31, "age_category": "Adult", "account_type": "⭐ Premium"},
+        {"name": "Bob", "age": 34, "age_category": "Senior", "account_type": "Standard"}
+      ]
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "📊",
+      "title": "Complex User Segmentation",
+      "description": "Create a user segmentation report with custom sorting: Premium users first, then by country (USA first), then by age descending.",
+      "solution": "SELECT \n    name,\n    country,\n    age,\n    premium,\n    CASE \n        WHEN premium = true THEN 'VIP'\n        WHEN age > 30 THEN 'Potential VIP'\n        ELSE 'Standard'\n    END AS segment\nFROM users\nORDER BY \n    CASE WHEN premium = true THEN 1 ELSE 2 END,\n    CASE WHEN country = 'USA' THEN 1 ELSE 2 END,\n    age DESC;",
+      "explanation": "Complex sorting with multiple CASE expressions allows custom ordering logic, useful for prioritizing records in ML feature extraction.",
+      "result": [
+        {"name": "Diana", "country": "Canada", "age": 31, "premium": true, "segment": "VIP"},
+        {"name": "Alice", "country": "USA", "age": 28, "premium": true, "segment": "VIP"},
+        {"name": "Charlie", "country": "USA", "age": 25, "premium": true, "segment": "VIP"},
+        {"name": "Bob", "country": "UK", "age": 34, "premium": false, "segment": "Potential VIP"},
+        {"name": "Eve", "country": "UK", "age": 29, "premium": false, "segment": "Standard"}
+      ]
+    }
+  ]
+}

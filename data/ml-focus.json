@@ -1,0 +1,45 @@
+{
+  "section": "ML Engineer Focus",
+  "problems": [
+    {
+      "difficulty": "Medium",
+      "icon": "🤖",
+      "title": "Feature Engineering in SQL",
+      "description": "Create a comprehensive set of user features for a machine learning model.",
+      "solution": "SELECT \n    user_id,\n    -- Demographic features\n    age,\n    country,\n    premium,\n    CURRENT_DATE - signup_date AS customer_lifetime_days,\n    \n    -- Behavioral features\n    COUNT(order_id) AS order_count,\n    COALESCE(SUM(amount), 0) AS lifetime_value,\n    COALESCE(AVG(amount), 0) AS avg_order_value,\n    COALESCE(MAX(amount), 0) AS max_order_value,\n    \n    -- Recency features\n    CURRENT_DATE - MAX(order_date) AS days_since_last_order,\n    CURRENT_DATE - MIN(order_date) AS days_since_first_order,\n    \n    -- Derived metrics\n    CASE \n        WHEN COUNT(order_id) > 0 THEN\n            COALESCE(SUM(amount), 0) / (CURRENT_DATE - signup_date + 1)\n        ELSE 0\n    END AS daily_value\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.age, u.country, u.premium, u.signup_date;",
+      "explanation": "Creates a feature set combining demographics, behavior, recency, and derived metrics. COALESCE handles NULLs for users without orders. Derived features like daily_value capture velocity metrics. This dataset is ready for model training."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "📊",
+      "title": "Time-Based Features",
+      "description": "Extract temporal patterns from order data for time-series ML models.",
+      "solution": "SELECT \n    user_id,\n    order_id,\n    order_date,\n    amount,\n    \n    -- Time-based features\n    EXTRACT(HOUR FROM order_date) AS hour_of_day,\n    EXTRACT(DOW FROM order_date) AS day_of_week,\n    EXTRACT(MONTH FROM order_date) AS month,\n    EXTRACT(QUARTER FROM order_date) AS quarter,\n    \n    -- Cyclical encoding preparation\n    SIN(2 * PI() * EXTRACT(HOUR FROM order_date) / 24) AS hour_sin,\n    COS(2 * PI() * EXTRACT(HOUR FROM order_date) / 24) AS hour_cos,\n    \n    -- Binary time indicators\n    CASE WHEN EXTRACT(DOW FROM order_date) IN (0, 6) THEN 1 ELSE 0 END AS is_weekend,\n    CASE WHEN EXTRACT(HOUR FROM order_date) BETWEEN 9 AND 17 THEN 1 ELSE 0 END AS is_business_hours,\n    \n    -- Recent activity windows\n    COUNT(*) OVER (\n        PARTITION BY user_id \n        ORDER BY order_date \n        RANGE BETWEEN INTERVAL '7 days' PRECEDING AND CURRENT ROW\n    ) AS orders_last_7d,\n    SUM(amount) OVER (\n        PARTITION BY user_id \n        ORDER BY order_date \n        RANGE BETWEEN INTERVAL '30 days' PRECEDING AND CURRENT ROW\n    ) AS revenue_last_30d\nFROM orders\nORDER BY user_id, order_date;",
+      "explanation": "Extracts temporal features crucial for ML models. Cyclical encoding (sin/cos) represents circular time features. Window functions calculate rolling metrics. Binary indicators capture business rules. These features help models learn time-dependent patterns."
+    },
+    {
+      "difficulty": "Easy",
+      "icon": "🎯",
+      "title": "Time-Based Train/Test Split",
+      "description": "Split data chronologically to prevent data leakage in time-series models.",
+      "solution": "SELECT \n    *,\n    CASE \n        WHEN order_date < '2024-03-01' THEN 'train'\n        WHEN order_date < '2024-04-01' THEN 'validation'\n        ELSE 'test'\n    END AS dataset_split\nFROM orders\nORDER BY order_date;",
+      "explanation": "Time-based split respects temporal order, preventing data leakage. Training data is oldest, test data is most recent. This simulates real-world prediction scenarios where you predict future events."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "🔍",
+      "title": "Data Quality Checks",
+      "description": "Validate data quality before training ML models: check NULLs, duplicates, and outliers.",
+      "solution": "-- Check for missing values\nSELECT \n    'Missing Values' AS check_type,\n    COUNT(*) AS total_rows,\n    SUM(CASE WHEN age IS NULL THEN 1 ELSE 0 END) AS missing_age,\n    SUM(CASE WHEN email IS NULL THEN 1 ELSE 0 END) AS missing_email,\n    SUM(CASE WHEN country IS NULL THEN 1 ELSE 0 END) AS missing_country\nFROM users\n\nUNION ALL\n\n-- Check for duplicates\nSELECT \n    'Duplicates' AS check_type,\n    COUNT(*) AS total_rows,\n    COUNT(*) - COUNT(DISTINCT user_id) AS duplicate_user_ids,\n    NULL AS missing_email,\n    NULL AS missing_country\nFROM users\n\nUNION ALL\n\n-- Check for outliers\nSELECT \n    'Outliers' AS check_type,\n    COUNT(*) AS total_rows,\n    SUM(CASE WHEN age < 0 OR age > 120 THEN 1 ELSE 0 END) AS invalid_ages,\n    SUM(CASE WHEN amount < 0 THEN 1 ELSE 0 END) AS negative_amounts,\n    NULL AS missing_country\nFROM users\nCROSS JOIN orders;",
+      "explanation": "Comprehensive data quality checks identify issues before model training. Checks for missing values (NULLs), duplicate records, and outliers. UNION ALL combines different check types. Run these checks regularly to ensure data integrity."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "🏗️",
+      "title": "Complete ML Feature Pipeline",
+      "description": "Build an end-to-end feature engineering pipeline with data quality, features, and splits.",
+      "solution": "WITH clean_data AS (\n    -- Data quality: remove invalid records\n    SELECT *\n    FROM users\n    WHERE \n        age IS NOT NULL\n        AND age > 0\n        AND age < 120\n        AND email IS NOT NULL\n        AND country IS NOT NULL\n),\nuser_features AS (\n    -- Core features\n    SELECT \n        u.user_id,\n        u.age,\n        u.country,\n        u.premium,\n        COUNT(o.order_id) AS order_count,\n        COALESCE(SUM(o.amount), 0) AS lifetime_value,\n        COALESCE(AVG(o.amount), 0) AS avg_order_value,\n        CURRENT_DATE - MAX(o.order_date) AS recency,\n        CURRENT_DATE - u.signup_date AS tenure_days\n    FROM clean_data u\n    LEFT JOIN orders o ON u.user_id = o.user_id\n    GROUP BY u.user_id, u.age, u.country, u.premium, u.signup_date\n),\nfeature_normalized AS (\n    -- Feature scaling and encoding\n    SELECT \n        *,\n        (lifetime_value - AVG(lifetime_value) OVER ()) / STDDEV(lifetime_value) OVER () AS ltv_zscore,\n        NTILE(10) OVER (ORDER BY lifetime_value) AS ltv_decile,\n        CASE \n            WHEN country = 'USA' THEN 1 ELSE 0 END AS country_usa,\n        CASE WHEN premium THEN 1 ELSE 0 END AS premium_binary\n    FROM user_features\n)\nSELECT \n    *,\n    -- Train/validation/test split\n    CASE \n        WHEN MOD(user_id, 10) < 7 THEN 'train'\n        WHEN MOD(user_id, 10) < 9 THEN 'validation'\n        ELSE 'test'\n    END AS dataset_split\nFROM feature_normalized\nORDER BY user_id;",
+      "explanation": "Complete ML pipeline: (1) clean_data CTE filters invalid records, (2) user_features CTE creates raw features, (3) feature_normalized CTE applies scaling and encoding, (4) final SELECT adds train/test split. This modular approach makes the pipeline maintainable and auditable. Each CTE can be tested independently."
+    }
+  ]
+}

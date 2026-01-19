@@ -1,0 +1,45 @@
+{
+  "section": "Subqueries",
+  "problems": [
+    {
+      "difficulty": "Easy",
+      "icon": "🎯",
+      "title": "Users Older Than Average",
+      "description": "Find all users who are older than the average age for age-based segmentation.",
+      "solution": "SELECT name, age\nFROM users\nWHERE age > (\n    SELECT AVG(age)\n    FROM users\n)\nORDER BY age DESC;",
+      "explanation": "Subquery in WHERE clause calculates average age first, then outer query filters users above that threshold. Useful for identifying above-average segments."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "💎",
+      "title": "Users with High-Value Purchases",
+      "description": "Find users who have made purchases over $500 for VIP targeting.",
+      "solution": "SELECT name, country\nFROM users\nWHERE user_id IN (\n    SELECT user_id\n    FROM orders\n    WHERE amount > 500\n)\nORDER BY name;",
+      "explanation": "IN with subquery checks if user_id exists in the subquery results. Alternative: use EXISTS which can be faster as it stops at the first match."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "✅",
+      "title": "Using EXISTS for Efficiency",
+      "description": "Find users who have placed any orders using EXISTS (more efficient than IN for existence checks).",
+      "solution": "SELECT u.name, u.country\nFROM users u\nWHERE EXISTS (\n    SELECT 1\n    FROM orders o\n    WHERE o.user_id = u.user_id\n)\nORDER BY u.name;",
+      "explanation": "EXISTS returns true/false and stops at first match, making it faster than IN. The subquery doesn't need to return actual values (SELECT 1 is sufficient)."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "🌍",
+      "title": "Correlated Subquery for Country Comparison",
+      "description": "Find users whose average order value is above their country's average (top performers by region).",
+      "solution": "SELECT \n    u.user_id,\n    u.name,\n    u.country,\n    (\n        SELECT AVG(o2.amount)\n        FROM orders o2\n        WHERE o2.user_id = u.user_id\n    ) AS user_avg_order,\n    (\n        SELECT AVG(o3.amount)\n        FROM orders o3\n        JOIN users u3 ON o3.user_id = u3.user_id\n        WHERE u3.country = u.country\n    ) AS country_avg_order\nFROM users u\nWHERE (\n    SELECT AVG(o.amount)\n    FROM orders o\n    WHERE o.user_id = u.user_id\n) > (\n    SELECT AVG(o.amount)\n    FROM orders o\n    JOIN users u2 ON o.user_id = u2.user_id\n    WHERE u2.country = u.country\n)\nORDER BY u.country, user_avg_order DESC;",
+      "explanation": "Correlated subquery references outer query (u.user_id, u.country). Executes once per row in outer query. Useful for row-by-row comparisons against aggregated metrics."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "📊",
+      "title": "CTE for RFM Segmentation",
+      "description": "Build RFM (Recency, Frequency, Monetary) segmentation using CTEs for retention campaigns.",
+      "solution": "WITH user_rfm AS (\n    SELECT \n        u.user_id,\n        u.name,\n        CURRENT_DATE - MAX(o.order_date) AS recency_days,\n        COUNT(o.order_id) AS frequency,\n        SUM(o.amount) AS monetary_value\n    FROM users u\n    LEFT JOIN orders o ON u.user_id = o.user_id\n    GROUP BY u.user_id, u.name\n),\nrfm_scores AS (\n    SELECT \n        *,\n        NTILE(5) OVER (ORDER BY recency_days) AS recency_score,\n        NTILE(5) OVER (ORDER BY frequency DESC) AS frequency_score,\n        NTILE(5) OVER (ORDER BY monetary_value DESC) AS monetary_score\n    FROM user_rfm\n)\nSELECT \n    user_id,\n    name,\n    recency_days,\n    frequency,\n    monetary_value,\n    recency_score,\n    frequency_score,\n    monetary_score,\n    (recency_score + frequency_score + monetary_score) AS rfm_total,\n    CASE \n        WHEN recency_score >= 4 AND frequency_score >= 4 THEN 'Champions'\n        WHEN recency_score >= 3 AND frequency_score >= 3 THEN 'Loyal'\n        WHEN recency_score <= 2 AND frequency_score >= 3 THEN 'At Risk'\n        WHEN recency_score <= 2 AND frequency_score <= 2 THEN 'Lost'\n        ELSE 'Potential'\n    END AS segment\nFROM rfm_scores\nORDER BY rfm_total DESC;",
+      "explanation": "CTEs (WITH clause) break complex queries into readable steps. First CTE calculates raw RFM metrics, second CTE scores them using NTILE, final query creates segments. Much more maintainable than nested subqueries."
+    }
+  ]
+}

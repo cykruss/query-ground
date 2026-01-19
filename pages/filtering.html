@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtering Data - SQL Mastery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="../css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="burger" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">SQL Mastery</div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-items">
+            <a href="../index.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">Home</div>
+            </a>
+            <a href="fundamentals.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">Fundamentals</div>
+            </a>
+            <a href="filtering.html" class="nav-item active" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-text">Filtering</div>
+            </a>
+            <a href="aggregation.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📊</div>
+                <div class="nav-text">Aggregation</div>
+            </a>
+            <a href="joins.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔗</div>
+                <div class="nav-text">Joins</div>
+            </a>
+            <a href="subqueries.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🎯</div>
+                <div class="nav-text">Subqueries</div>
+            </a>
+            <a href="window-functions.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📈</div>
+                <div class="nav-text">Window Functions</div>
+            </a>
+            <a href="advanced.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">⚡</div>
+                <div class="nav-text">Advanced</div>
+            </a>
+            <a href="ml-focus.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-text">ML Focus</div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main">
+        <div class="section-header">
+            <h1 class="section-title">Filtering Data</h1>
+            <p class="section-subtitle">WHERE clause and conditional logic</p>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">🔍</span>
+                WHERE Clause Basics
+            </h2>
+            <div class="card-content">
+                <p>The WHERE clause filters rows based on conditions. Only rows that meet the condition are returned.</p>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Simple Conditions</h3>
+                <pre><code class="language-sql">-- Filter by a single condition
+-- Only return users older than 28
+SELECT name, age, country
+FROM users
+WHERE age > 28;</code></pre>
+                
+                <div class="result-table-container">
+                    <div class="result-label">📊 Result:</div>
+                    <table class="result-table">
+                        <thead>
+                            <tr><th>name</th><th>age</th><th>country</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Bob</td><td>34</td><td>UK</td></tr>
+                            <tr><td>Diana</td><td>31</td><td>Canada</td></tr>
+                            <tr><td>Eve</td><td>29</td><td>UK</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <pre><code class="language-sql">-- Equality check
+SELECT name, country
+FROM users
+WHERE country = 'USA';</code></pre>
+                
+                <div class="result-table-container">
+                    <div class="result-label">📊 Result:</div>
+                    <table class="result-table">
+                        <thead>
+                            <tr><th>name</th><th>country</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Alice</td><td>USA</td></tr>
+                            <tr><td>Charlie</td><td>USA</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <pre><code class="language-sql">-- Not equal
+SELECT name, premium
+FROM users
+WHERE premium != true;  -- or: WHERE premium = false</code></pre>
+                
+                <div class="result-table-container">
+                    <div class="result-label">📊 Result:</div>
+                    <table class="result-table">
+                        <thead>
+                            <tr><th>name</th><th>premium</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Bob</td><td>false</td></tr>
+                            <tr><td>Eve</td><td>false</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Combining Conditions</h3>
+                <pre><code class="language-sql">-- AND: Both conditions must be true
+SELECT name, age, country
+FROM users
+WHERE age > 25 AND country = 'USA';
+-- All conditions connected with AND must be true
+-- Result: Alice (28, USA), Charlie (25 is NOT > 25, so excluded)
+
+-- OR: At least one condition must be true
+SELECT name, age, country
+FROM users
+WHERE age > 30 OR country = 'Canada';
+-- If ANY condition is true, row is included
+-- Result: Bob (34), Diana (Canada), 
+
+-- Combining AND & OR with parentheses
+-- Parentheses control the order of evaluation
+SELECT name, age, country, premium
+FROM users
+WHERE (age > 30 OR country = 'USA')  -- First evaluate this
+      AND premium = true;             -- Then AND with this
+-- Result: Alice (USA, premium), Diana (>30, premium)
+
+-- Without parentheses, AND is evaluated first!</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex Filtering</h3>
+                <pre><code class="language-sql">-- Combine multiple logical operators
+SELECT 
+    name,
+    age,
+    country,
+    premium,
+    signup_date
+FROM users
+WHERE 
+    -- Complex nested conditions
+    (
+        (country IN ('USA', 'Canada') AND age BETWEEN 25 AND 30)
+        OR
+        (country = 'UK' AND premium = true)
+    )
+    AND signup_date >= '2024-02-01'  -- Further filter by date
+    AND name NOT LIKE 'B%';          -- Exclude names starting with B
+
+-- This creates a specific user segment for targeted analysis
+-- Useful for creating training datasets with specific characteristics</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>Use WHERE clauses to create balanced datasets. For example, filter by time periods to avoid data leakage, or by user segments to handle class imbalance.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">🎯</span>
+                Special Operators
+            </h2>
+            <div class="card-content">
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: BETWEEN & IN</h3>
+                <pre><code class="language-sql">-- BETWEEN: Inclusive range (includes both boundaries)
+SELECT name, age
+FROM users
+WHERE age BETWEEN 25 AND 30;
+-- Same as: WHERE age >= 25 AND age <= 30
+-- Result: Charlie (25), Alice (28), Eve (29), Diana (31... wait, 31 is NOT included!)
+
+-- IN: Match any value in a list
+SELECT name, country
+FROM users
+WHERE country IN ('USA', 'UK');
+-- Same as: WHERE country = 'USA' OR country = 'UK'
+-- More efficient and readable than multiple ORs
+-- Result: Alice, Bob, Charlie, Eve
+
+-- NOT IN: Exclude values
+SELECT name, country
+FROM users
+WHERE country NOT IN ('USA');
+-- Result: Bob (UK), Diana (Canada), Eve (UK)</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: LIKE for Pattern Matching</h3>
+                <pre><code class="language-sql">-- LIKE uses wildcards for pattern matching
+-- % = any number of characters (including zero)
+-- _ = exactly one character
+
+-- Names starting with 'A'
+SELECT name
+FROM users
+WHERE name LIKE 'A%';
+-- Result: Alice
+
+-- Names ending with 'e'
+SELECT name
+FROM users
+WHERE name LIKE '%e';
+-- Result: Alice, Charlie, Eve
+
+-- Names containing 'ar'
+SELECT name
+FROM users
+WHERE name LIKE '%ar%';
+-- Result: Charlie
+
+-- Names with exactly 3 characters
+SELECT name
+FROM users
+WHERE name LIKE '___';  -- Three underscores
+-- Result: Bob, Eve
+
+-- Case-insensitive search (depends on database)
+SELECT name
+FROM users
+WHERE LOWER(name) LIKE '%ali%';
+-- Converts name to lowercase before comparing
+-- Result: Alice</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: NULL Handling & Edge Cases</h3>
+                <pre><code class="language-sql">-- IS NULL / IS NOT NULL
+-- NULL means "unknown" or "missing value"
+-- You CANNOT use = NULL (it won't work!)
+
+-- Find users with missing email
+SELECT name, age
+FROM users
+WHERE email IS NULL;
+
+-- Find users with email present
+SELECT name, email
+FROM users
+WHERE email IS NOT NULL;
+
+-- COALESCE: Handle NULL values
+-- Returns the first non-NULL value
+SELECT 
+    name,
+    COALESCE(email, 'no-email@example.com') AS email,
+    COALESCE(age, 0) AS age,
+    COALESCE(last_login, signup_date) AS last_active_date
+FROM users;
+
+-- Complex NULL filtering for data quality
+SELECT 
+    name,
+    age,
+    email,
+    country
+FROM users
+WHERE 
+    email IS NOT NULL           -- Has email
+    AND age IS NOT NULL         -- Has age
+    AND age > 0                 -- Age is valid
+    AND age < 120               -- Age is realistic
+    AND country IS NOT NULL     -- Has country
+    AND LENGTH(name) > 1        -- Name isn't just one character
+    AND signup_date >= '2024-01-01';  -- Recent signups
+
+-- This creates a clean dataset for ML training</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>Always handle NULLs explicitly in your feature engineering. Decide: filter them out, impute with COALESCE, or create an "is_null" indicator feature.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">📅</span>
+                Date & Time Filtering
+            </h2>
+            <div class="card-content">
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic Date Comparisons</h3>
+                <pre><code class="language-sql">-- Filter by specific date
+SELECT name, signup_date
+FROM users
+WHERE signup_date = '2024-01-15';
+
+-- Date ranges
+SELECT name, signup_date
+FROM users
+WHERE signup_date >= '2024-02-01' 
+  AND signup_date < '2024-03-01';  -- February 2024
+
+-- or using BETWEEN
+SELECT name, signup_date
+FROM users
+WHERE signup_date BETWEEN '2024-02-01' AND '2024-02-29';</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Date Functions</h3>
+                <pre><code class="language-sql">-- Current date comparisons
+SELECT name, signup_date
+FROM users
+WHERE signup_date >= CURRENT_DATE - INTERVAL '30 days';
+-- Users who signed up in last 30 days
+
+-- Extract parts of dates
+SELECT 
+    name,
+    signup_date,
+    EXTRACT(YEAR FROM signup_date) AS signup_year,
+    EXTRACT(MONTH FROM signup_date) AS signup_month,
+    EXTRACT(DOW FROM signup_date) AS day_of_week  -- 0=Sunday
+FROM users
+WHERE EXTRACT(MONTH FROM signup_date) = 2;  -- February signups
+
+-- Date calculations
+SELECT name, signup_date
+FROM users
+WHERE DATE_TRUNC('month', signup_date) = '2024-02-01';
+-- All signups in February 2024</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex Time-Based Filtering</h3>
+                <pre><code class="language-sql">-- Create time-based cohorts
+SELECT 
+    name,
+    signup_date,
+    -- Days since signup
+    CURRENT_DATE - signup_date AS days_active,
+    -- Categorize by signup quarter
+    CASE 
+        WHEN EXTRACT(MONTH FROM signup_date) <= 3 THEN 'Q1'
+        WHEN EXTRACT(MONTH FROM signup_date) <= 6 THEN 'Q2'
+        WHEN EXTRACT(MONTH FROM signup_date) <= 9 THEN 'Q3'
+        ELSE 'Q4'
+    END AS signup_quarter
+FROM users
+WHERE 
+    -- Signed up in last 90 days
+    signup_date >= CURRENT_DATE - INTERVAL '90 days'
+    -- But not in the last 7 days (to ensure enough activity data)
+    AND signup_date <= CURRENT_DATE - INTERVAL '7 days'
+    -- Only weekday signups
+    AND EXTRACT(DOW FROM signup_date) BETWEEN 1 AND 5;
+
+-- This creates a cohort for analyzing user behavior patterns</code></pre>
+            </div>
+        </div>
+        
+        <!-- Practice Problems Section -->
+        <div id="problems-container" data-json-path="../data/filtering.json"></div>
+        
+        <div class="nav-buttons">
+            <a href="fundamentals.html" class="nav-btn" style="text-decoration: none;">← Fundamentals</a>
+            <a href="aggregation.html" class="nav-btn" style="text-decoration: none;">Next: Aggregation →</a>
+        </div>
+    </div>
+    
+    <!-- Reference Panel -->
+    <div class="reference-panel" id="reference-panel">
+        <h3 class="reference-title">📋 Sample Data Reference</h3>
+        
+        <div class="reference-table-section">
+            <h4>users table</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>user_id</th>
+                        <th>name</th>
+                        <th>age</th>
+                        <th>country</th>
+                        <th>signup_date</th>
+                        <th>premium</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>Alice</td><td>28</td><td>USA</td><td>2024-01-15</td><td>true</td></tr>
+                    <tr><td>2</td><td>Bob</td><td>34</td><td>UK</td><td>2024-02-20</td><td>false</td></tr>
+                    <tr><td>3</td><td>Charlie</td><td>25</td><td>USA</td><td>2024-03-10</td><td>true</td></tr>
+                    <tr><td>4</td><td>Diana</td><td>31</td><td>Canada</td><td>2024-01-22</td><td>true</td></tr>
+                    <tr><td>5</td><td>Eve</td><td>29</td><td>UK</td><td>2024-04-05</td><td>false</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="reference-table-section">
+            <h4>orders table</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>order_id</th>
+                        <th>user_id</th>
+                        <th>product</th>
+                        <th>amount</th>
+                        <th>order_date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>101</td><td>1</td><td>Laptop</td><td>1200</td><td>2024-02-01</td></tr>
+                    <tr><td>102</td><td>1</td><td>Mouse</td><td>25</td><td>2024-02-15</td></tr>
+                    <tr><td>103</td><td>2</td><td>Keyboard</td><td>75</td><td>2024-03-01</td></tr>
+                    <tr><td>104</td><td>3</td><td>Monitor</td><td>350</td><td>2024-03-20</td></tr>
+                    <tr><td>105</td><td>3</td><td>Laptop</td><td>1500</td><td>2024-04-10</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Reference Toggle Button -->
+    <button class="reference-toggle" onclick="toggleReference()" title="Toggle Reference Tables">
+        📚
+    </button>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/problem-renderer.js"></script>
+</body>
+</html>

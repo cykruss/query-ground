@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subqueries - SQL Mastery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="../css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="burger" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">SQL Mastery</div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-items">
+            <a href="../index.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">Home</div>
+            </a>
+            <a href="fundamentals.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">Fundamentals</div>
+            </a>
+            <a href="filtering.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-text">Filtering</div>
+            </a>
+            <a href="aggregation.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📊</div>
+                <div class="nav-text">Aggregation</div>
+            </a>
+            <a href="joins.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔗</div>
+                <div class="nav-text">Joins</div>
+            </a>
+            <a href="subqueries.html" class="nav-item active" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🎯</div>
+                <div class="nav-text">Subqueries</div>
+            </a>
+            <a href="window-functions.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📈</div>
+                <div class="nav-text">Window Functions</div>
+            </a>
+            <a href="advanced.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">⚡</div>
+                <div class="nav-text">Advanced</div>
+            </a>
+            <a href="ml-focus.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-text">ML Focus</div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main">
+        <div class="section-header">
+            <h1 class="section-title">Subqueries</h1>
+            <p class="section-subtitle">Nested queries for complex logic</p>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">🎯</span>
+                Subqueries in WHERE
+            </h2>
+            <div class="card-content">
+                <p>Subqueries allow you to use the result of one query inside another query.</p>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Single Value Subquery</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Find all users older than the average age (for age-based segmentation).
+                </p>
+                <pre><code class="language-sql">-- Subquery returns a single value (average age)
+SELECT name, age, country
+FROM users
+WHERE age > (
+    SELECT AVG(age)   -- This runs first, returns one number
+    FROM users
+);
+
+-- Execution order:
+-- 1. Inner query calculates AVG(age) = 29.4
+-- 2. Outer query finds users WHERE age > 29.4
+-- Result: Bob (34), Diana (31)</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Subquery with IN</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Find users who have made high-value purchases (over $500) for VIP targeting.
+                </p>
+                <pre><code class="language-sql">-- Subquery returns multiple values
+SELECT 
+    user_id,
+    name,
+    age,
+    country
+FROM users
+WHERE user_id IN (
+    -- Get all user_ids with orders over $500
+    SELECT DISTINCT user_id
+    FROM orders
+    WHERE amount > 500
+);
+-- Result: Alice (Laptop: 1200), Charlie (Laptop: 1500)
+
+-- Compare with NOT IN for opposite
+SELECT name, age
+FROM users
+WHERE user_id NOT IN (
+    SELECT DISTINCT user_id
+    FROM orders
+    WHERE amount > 500
+);
+-- Result: Bob, Diana, Eve (no high-value purchases)
+
+-- Alternative using EXISTS (often faster)
+SELECT u.name, u.age
+FROM users u
+WHERE EXISTS (
+    SELECT 1  -- We don't care what's returned, just if it exists
+    FROM orders o
+    WHERE o.user_id = u.user_id
+    AND o.amount > 500
+);</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Correlated Subquery</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Find users whose average order value is above their country's average (top performers by region).
+                </p>
+                <pre><code class="language-sql">-- Correlated subquery: references outer query
+-- Runs once for EACH row in outer query (can be slow!)
+SELECT 
+    u.user_id,
+    u.name,
+    u.country,
+    (
+        -- User's personal average
+        SELECT AVG(amount)
+        FROM orders o1
+        WHERE o1.user_id = u.user_id
+    ) AS user_avg_order,
+    (
+        -- Country average (calculated for this user's country)
+        SELECT AVG(o2.amount)
+        FROM orders o2
+        INNER JOIN users u2 ON o2.user_id = u2.user_id
+        WHERE u2.country = u.country  -- References outer query!
+    ) AS country_avg_order
+FROM users u
+WHERE (
+    SELECT AVG(amount)
+    FROM orders o
+    WHERE o.user_id = u.user_id
+) > (
+    SELECT AVG(o2.amount)
+    FROM orders o2
+    INNER JOIN users u2 ON o2.user_id = u2.user_id
+    WHERE u2.country = u.country
+);
+
+-- This finds "above-average performers" within their region
+-- Useful for identifying outliers and regional champions</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>Use EXISTS instead of IN when checking for existence. It's often faster because it stops at the first match. Use NOT EXISTS to find missing relationships.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">📋</span>
+                Subqueries in SELECT & FROM
+            </h2>
+            <div class="card-content">
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Subquery in SELECT</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Show each user alongside the total number of users (for percentile calculations).
+                </p>
+                <pre><code class="language-sql">-- Subquery in SELECT creates a calculated column
+SELECT 
+    name,
+    age,
+    country,
+    (SELECT COUNT(*) FROM users) AS total_users,
+    (SELECT AVG(age) FROM users) AS avg_age_all_users,
+    age - (SELECT AVG(age) FROM users) AS age_deviation
+FROM users;
+
+-- Each row shows its value plus aggregate statistics
+-- Useful for feature engineering: "distance from mean"</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Subquery in FROM (Derived Table)</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Calculate order statistics first, then filter users based on those aggregations.
+                </p>
+                <pre><code class="language-sql">-- Subquery in FROM creates a temporary table
+SELECT 
+    u.name,
+    u.country,
+    order_stats.order_count,
+    order_stats.total_spent,
+    order_stats.avg_order
+FROM users u
+INNER JOIN (
+    -- This subquery runs first and creates a temporary result
+    SELECT 
+        user_id,
+        COUNT(*) AS order_count,
+        SUM(amount) AS total_spent,
+        AVG(amount) AS avg_order
+    FROM orders
+    GROUP BY user_id
+    HAVING COUNT(*) >= 2  -- Only users with 2+ orders
+) AS order_stats ON u.user_id = order_stats.user_id
+WHERE order_stats.total_spent > 500;
+
+-- Benefits:
+-- 1. Break complex queries into logical steps
+-- 2. Filter aggregated data before joining
+-- 3. More readable than one giant query</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Multiple Nested Subqueries</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Build a customer RFM (Recency, Frequency, Monetary) segmentation for retention campaigns.
+                </p>
+                <pre><code class="language-sql">-- Create RFM scores using subqueries
+SELECT 
+    name,
+    country,
+    rfm_data.recency_days,
+    rfm_data.frequency,
+    rfm_data.monetary,
+    -- Score each dimension (1-5, where 5 is best)
+    CASE 
+        WHEN rfm_data.recency_days <= 30 THEN 5
+        WHEN rfm_data.recency_days <= 60 THEN 4
+        WHEN rfm_data.recency_days <= 90 THEN 3
+        WHEN rfm_data.recency_days <= 180 THEN 2
+        ELSE 1
+    END AS recency_score,
+    CASE 
+        WHEN rfm_data.frequency >= (SELECT PERCENTILE_CONT(0.8) WITHIN GROUP (ORDER BY frequency) 
+                                    FROM (SELECT user_id, COUNT(*) as frequency 
+                                          FROM orders GROUP BY user_id) f) THEN 5
+        WHEN rfm_data.frequency >= (SELECT PERCENTILE_CONT(0.6) WITHIN GROUP (ORDER BY frequency) 
+                                    FROM (SELECT user_id, COUNT(*) as frequency 
+                                          FROM orders GROUP BY user_id) f) THEN 4
+        WHEN rfm_data.frequency >= (SELECT PERCENTILE_CONT(0.4) WITHIN GROUP (ORDER BY frequency) 
+                                    FROM (SELECT user_id, COUNT(*) as frequency 
+                                          FROM orders GROUP BY user_id) f) THEN 3
+        WHEN rfm_data.frequency >= (SELECT PERCENTILE_CONT(0.2) WITHIN GROUP (ORDER BY frequency) 
+                                    FROM (SELECT user_id, COUNT(*) as frequency 
+                                          FROM orders GROUP BY user_id) f) THEN 2
+        ELSE 1
+    END AS frequency_score,
+    CASE 
+        WHEN rfm_data.monetary >= 1000 THEN 5
+        WHEN rfm_data.monetary >= 500 THEN 4
+        WHEN rfm_data.monetary >= 200 THEN 3
+        WHEN rfm_data.monetary >= 50 THEN 2
+        ELSE 1
+    END AS monetary_score
+FROM users u
+INNER JOIN (
+    -- Calculate RFM metrics for each user
+    SELECT 
+        user_id,
+        CURRENT_DATE - MAX(order_date) AS recency_days,
+        COUNT(*) AS frequency,
+        SUM(amount) AS monetary
+    FROM orders
+    GROUP BY user_id
+) rfm_data ON u.user_id = rfm_data.user_id
+ORDER BY 
+    recency_score DESC,
+    frequency_score DESC,
+    monetary_score DESC;
+
+-- Creates customer segments:
+-- 555 = Champions, 111 = Hibernating, etc.</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>Subqueries in FROM are great for feature engineering. Calculate intermediate features first, then use them in more complex calculations. Consider using CTEs (next section) for better readability.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Practice Problems Section -->
+        <div id="problems-container" data-json-path="../data/subqueries.json"></div>
+        
+        <div class="nav-buttons">
+            <a href="joins.html" class="nav-btn" style="text-decoration: none;">← Joins</a>
+            <a href="window-functions.html" class="nav-btn" style="text-decoration: none;">Next: Window Functions →</a>
+        </div>
+    </div>
+    
+    <!-- Reference Panel -->
+    <div class="reference-panel" id="reference-panel">
+        <h3 class="reference-title">📋 Sample Data Reference</h3>
+        <div class="reference-table-section">
+            <h4>users table</h4>
+            <table>
+                <thead>
+                    <tr><th>user_id</th><th>name</th><th>age</th><th>country</th><th>signup_date</th><th>premium</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>Alice</td><td>28</td><td>USA</td><td>2024-01-15</td><td>true</td></tr>
+                    <tr><td>2</td><td>Bob</td><td>34</td><td>UK</td><td>2024-02-20</td><td>false</td></tr>
+                    <tr><td>3</td><td>Charlie</td><td>25</td><td>USA</td><td>2024-03-10</td><td>true</td></tr>
+                    <tr><td>4</td><td>Diana</td><td>31</td><td>Canada</td><td>2024-01-22</td><td>true</td></tr>
+                    <tr><td>5</td><td>Eve</td><td>29</td><td>UK</td><td>2024-04-05</td><td>false</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="reference-table-section">
+            <h4>orders table</h4>
+            <table>
+                <thead>
+                    <tr><th>order_id</th><th>user_id</th><th>product</th><th>amount</th><th>order_date</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>101</td><td>1</td><td>Laptop</td><td>1200</td><td>2024-02-01</td></tr>
+                    <tr><td>102</td><td>1</td><td>Mouse</td><td>25</td><td>2024-02-15</td></tr>
+                    <tr><td>103</td><td>2</td><td>Keyboard</td><td>75</td><td>2024-03-01</td></tr>
+                    <tr><td>104</td><td>3</td><td>Monitor</td><td>350</td><td>2024-03-20</td></tr>
+                    <tr><td>105</td><td>3</td><td>Laptop</td><td>1500</td><td>2024-04-10</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <button class="reference-toggle" onclick="toggleReference()" title="Toggle Reference Tables">📚</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/problem-renderer.js"></script>
+</body>
+</html>

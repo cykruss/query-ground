@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Fundamentals - SQL Mastery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="../css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="burger" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">SQL Mastery</div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-items">
+            <a href="../index.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">Home</div>
+            </a>
+            <a href="fundamentals.html" class="nav-item active" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">Fundamentals</div>
+            </a>
+            <a href="filtering.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-text">Filtering</div>
+            </a>
+            <a href="aggregation.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📊</div>
+                <div class="nav-text">Aggregation</div>
+            </a>
+            <a href="joins.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔗</div>
+                <div class="nav-text">Joins</div>
+            </a>
+            <a href="subqueries.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🎯</div>
+                <div class="nav-text">Subqueries</div>
+            </a>
+            <a href="window-functions.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📈</div>
+                <div class="nav-text">Window Functions</div>
+            </a>
+            <a href="advanced.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">⚡</div>
+                <div class="nav-text">Advanced</div>
+            </a>
+            <a href="ml-focus.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-text">ML Focus</div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main has-reference reference-expanded">
+        <div class="section-header">
+            <h1 class="section-title">SQL Fundamentals</h1>
+            <p class="section-subtitle">Building blocks of querying data</p>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">💾</span>
+                What is SQL?
+            </h2>
+            <div class="card-content">
+                <p>SQL (Structured Query Language) is the standard language for interacting with relational databases. For ML engineers, SQL is essential for:</p>
+                <ul>
+                    <li>Extracting training data from production databases</li>
+                    <li>Feature engineering through data transformations</li>
+                    <li>Data quality checks and validation</li>
+                    <li>Analyzing model performance metrics</li>
+                    <li>Joining datasets from multiple sources</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">🎯</span>
+                SELECT: Retrieving Data
+            </h2>
+            <div class="card-content">
+                <p>The SELECT statement is the foundation of SQL - it retrieves data from tables.</p>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic SELECT</h3>
+                <pre><code class="language-sql">-- Select specific columns from a table
+-- This retrieves only the columns you specify
+SELECT name, age 
+FROM users;</code></pre>
+                <button class="try-it-btn" onclick="tryQuery(`SELECT name, age 
+FROM users;`)">
+                    <span>▶️</span>
+                    <span>Try it</span>
+                </button>
+                
+                <div class="result-table-container">
+                    <div class="result-label">📊 Result:</div>
+                    <table class="result-table">
+                        <thead>
+                            <tr><th>name</th><th>age</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Alice</td><td>28</td></tr>
+                            <tr><td>Bob</td><td>34</td></tr>
+                            <tr><td>Charlie</td><td>25</td></tr>
+                            <tr><td>Diana</td><td>31</td></tr>
+                            <tr><td>Eve</td><td>29</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: SELECT with Expressions</h3>
+                <pre><code class="language-sql">-- Use calculations and create aliases
+-- Aliases give meaningful names to calculated columns
+SELECT 
+    name,                              -- Original column
+    age,                               -- Original column
+    age * 12 AS age_in_months,        -- Calculate and rename with AS
+    UPPER(country) AS country_code,    -- Transform text to uppercase
+    CONCAT(name, ' (', age, ')') AS name_with_age  -- Combine columns
+FROM users;</code></pre>
+                <button class="try-it-btn" onclick="tryQuery(`SELECT 
+    name,
+    age,
+    age * 12 AS age_in_months,
+    UPPER(country) AS country_code
+FROM users;`)">
+                    <span>▶️</span>
+                    <span>Try it</span>
+                </button>
+                
+                <div class="result-table-container">
+                    <div class="result-label">📊 Result (first 2 rows):</div>
+                    <table class="result-table">
+                        <thead>
+                            <tr><th>name</th><th>age</th><th>age_in_months</th><th>country_code</th><th>name_with_age</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Alice</td><td>28</td><td>336</td><td>USA</td><td>Alice (28)</td></tr>
+                            <tr><td>Bob</td><td>34</td><td>408</td><td>UK</td><td>Bob (34)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: SELECT with CASE Statements</h3>
+                <pre><code class="language-sql">-- Create conditional columns (like if-else logic)
+-- CASE evaluates conditions and returns different values
+SELECT 
+    name,
+    age,
+    -- Categorize age into groups
+    CASE 
+        WHEN age < 25 THEN 'Young'       -- First condition checked
+        WHEN age BETWEEN 25 AND 30 THEN 'Mid'  -- Check if 25 ≤ age ≤ 30
+        ELSE 'Senior'                     -- Default if nothing matches
+    END AS age_group,
+    -- Create multiple calculated fields
+    CASE
+        WHEN premium = true AND age > 30 THEN 'High Value'
+        WHEN premium = true THEN 'Growing'
+        ELSE 'Standard'
+    END AS customer_segment,
+    -- Nested calculations
+    ROUND(
+        CASE 
+            WHEN age > 30 THEN age * 1.5 
+            ELSE age * 1.2 
+        END, 
+        2
+    ) AS weighted_age_score
+FROM users;
+
+-- This creates segments for targeting in ML models</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>Use CASE statements to create categorical features (like user segments) directly in SQL. This is faster than doing it in Python later!</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">📦</span>
+                DISTINCT & LIMIT
+            </h2>
+            <div class="card-content">
+                <p>Control what rows you get back.</p>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Get Unique Values</h3>
+                <pre><code class="language-sql">-- DISTINCT removes duplicate rows
+-- Useful for finding all unique values in a column
+SELECT DISTINCT country 
+FROM users;
+
+-- Result: USA, UK, Canada (only unique countries)
+
+-- Count unique values
+SELECT COUNT(DISTINCT country) AS unique_countries
+FROM users;
+-- Result: 3</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: LIMIT for Sampling</h3>
+                <pre><code class="language-sql">-- LIMIT restricts the number of rows returned
+-- Great for testing queries on large datasets
+SELECT name, age, country
+FROM users
+ORDER BY signup_date DESC  -- Sort by newest first
+LIMIT 3;                    -- Only get top 3 rows
+
+-- LIMIT with OFFSET for pagination
+-- OFFSET skips the first N rows
+SELECT name, signup_date
+FROM users
+ORDER BY signup_date
+LIMIT 2 OFFSET 2;  -- Skip first 2, then get next 2
+
+-- This is like getting page 2 with page size of 2</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Combining DISTINCT with Multiple Columns</h3>
+                <pre><code class="language-sql">-- DISTINCT on multiple columns finds unique combinations
+SELECT DISTINCT 
+    country,
+    -- Bucket age into ranges
+    CASE 
+        WHEN age < 30 THEN '20s'
+        WHEN age < 40 THEN '30s'
+        ELSE '40+'
+    END AS age_bucket,
+    premium
+FROM users
+ORDER BY country, age_bucket;
+
+-- This shows all unique combinations of country, age range, and premium status
+-- Useful for understanding data distribution before ML modeling</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>Use LIMIT when testing feature engineering queries on large datasets. Test with LIMIT 1000, then remove it for full dataset.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">🔢</span>
+                ORDER BY: Sorting Results
+            </h2>
+            <div class="card-content">
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic Sorting</h3>
+                <pre><code class="language-sql">-- Sort rows by one column
+SELECT name, age
+FROM users
+ORDER BY age;  -- Default is ASC (ascending)
+
+-- Sort in descending order
+SELECT name, age
+FROM users
+ORDER BY age DESC;  -- Oldest first</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Multi-Column Sorting</h3>
+                <pre><code class="language-sql">-- Sort by multiple columns
+-- First sorts by country, then within each country by age
+SELECT name, country, age
+FROM users
+ORDER BY 
+    country ASC,   -- Countries A-Z
+    age DESC;       -- Within each country, oldest first
+
+-- You can also use column numbers (not recommended in production)
+SELECT name, country, age
+FROM users
+ORDER BY 2, 3 DESC;  -- 2 = country, 3 = age</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Sorting with Expressions & NULLS</h3>
+                <pre><code class="language-sql">-- Sort by calculated values
+SELECT 
+    name,
+    age,
+    signup_date,
+    -- Calculate days since signup
+    DATEDIFF(CURRENT_DATE, signup_date) AS days_active
+FROM users
+ORDER BY 
+    -- Custom sort order using CASE
+    CASE 
+        WHEN premium = true THEN 1  -- Premium users first
+        ELSE 2
+    END,
+    days_active DESC,  -- Then by most active
+    NULLS LAST;        -- Put NULL values at end
+
+-- Sort by complex conditions
+SELECT name, age, country
+FROM users
+ORDER BY 
+    -- Sort USA to top, then others alphabetically
+    CASE WHEN country = 'USA' THEN 0 ELSE 1 END,
+    country,
+    age DESC;</code></pre>
+            </div>
+        </div>
+        
+        <!-- Practice Problems Section -->
+        <div id="problems-container" data-json-path="../data/fundamentals.json"></div>
+        
+        <div class="nav-buttons">
+            <a href="../index.html" class="nav-btn" style="text-decoration: none;">← Home</a>
+            <a href="filtering.html" class="nav-btn" style="text-decoration: none;">Next: Filtering →</a>
+        </div>
+    </div>
+    
+    <!-- SQL Console -->
+    <div class="sql-console" id="sql-console">
+        <div class="sql-console-header">
+            <div class="sql-console-title">
+                <span>⚡</span>
+                <span>SQL Console</span>
+            </div>
+            <button class="sql-console-close" onclick="toggleSQLConsole()" title="Close Console">×</button>
+        </div>
+        <div class="sql-console-body">
+            <div class="sql-input-section">
+                <label class="sql-input-label">Write your SQL query:</label>
+                <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                    <button class="try-it-btn" onclick="tryQuery('SELECT * FROM users;')" style="margin: 0;">
+                        <span>👥</span>
+                        <span>View Users</span>
+                    </button>
+                    <button class="try-it-btn" onclick="tryQuery('SELECT * FROM orders;')" style="margin: 0;">
+                        <span>🛒</span>
+                        <span>View Orders</span>
+                    </button>
+                    <button class="try-it-btn" onclick="resetDatabase()" style="margin: 0; border-color: var(--accent-purple); color: var(--accent-purple);">
+                        <span>🔄</span>
+                        <span>Reset DB</span>
+                    </button>
+                </div>
+                <textarea id="sql-input" class="sql-input" placeholder="SELECT * FROM users;"></textarea>
+                <button class="sql-execute-btn" onclick="executeSQLQuery()">
+                    <span>▶</span>
+                    <span>Execute Query</span>
+                </button>
+            </div>
+            <div class="sql-result-section" id="sql-result">
+                <div class="sql-result-empty">Run a query to see results here...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SQL Console Toggle Button -->
+    <button class="sql-console-toggle" onclick="toggleSQLConsole()" title="Toggle SQL Console">
+        ⚡
+    </button>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    
+    <!-- Load Monaco Editor -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+    <script>
+        require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+        
+        // Load Monaco and DuckDB
+        require(['vs/editor/editor.main'], function() {
+            window.monaco = monaco;
+            window.monacoLoaded = true;
+            console.log('✅ Monaco Editor loaded');
+        });
+    </script>
+    
+    <!-- Load DuckDB using UMD bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-browser-blocking.js"></script>
+    <script>
+        // DuckDB is now available globally
+        window.duckdb = duckdb;
+        window.duckdbLoaded = true;
+        console.log('✅ DuckDB loaded');
+    </script>
+    
+    <!-- Load app scripts after libraries -->
+    <script src="../js/common.js"></script>
+    <script src="../js/problem-renderer.js"></script>
+    <script src="../js/sql-executor.js"></script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joins - SQL Mastery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="../css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="burger" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">SQL Mastery</div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-items">
+            <a href="../index.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">Home</div>
+            </a>
+            <a href="fundamentals.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">Fundamentals</div>
+            </a>
+            <a href="filtering.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-text">Filtering</div>
+            </a>
+            <a href="aggregation.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📊</div>
+                <div class="nav-text">Aggregation</div>
+            </a>
+            <a href="joins.html" class="nav-item active" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔗</div>
+                <div class="nav-text">Joins</div>
+            </a>
+            <a href="subqueries.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🎯</div>
+                <div class="nav-text">Subqueries</div>
+            </a>
+            <a href="window-functions.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📈</div>
+                <div class="nav-text">Window Functions</div>
+            </a>
+            <a href="advanced.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">⚡</div>
+                <div class="nav-text">Advanced</div>
+            </a>
+            <a href="ml-focus.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-text">ML Focus</div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main">
+        <div class="section-header">
+            <h1 class="section-title">Joins</h1>
+            <p class="section-subtitle">Combining data from multiple tables</p>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">🔗</span>
+                INNER JOIN
+            </h2>
+            <div class="card-content">
+                <p>INNER JOIN returns only rows that have matching values in both tables. Think of it as the intersection.</p>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic INNER JOIN</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> You need to get a list of all users who have placed orders, along with their order details.
+                </p>
+                <pre><code class="language-sql">-- Join users with their orders
+-- Only returns users who have at least one order
+SELECT 
+    u.user_id,              -- From users table (aliased as 'u')
+    u.name,
+    o.order_id,             -- From orders table (aliased as 'o')
+    o.product,
+    o.amount
+FROM users u                -- Left table
+INNER JOIN orders o         -- Right table
+    ON u.user_id = o.user_id;  -- Join condition: matching key
+
+-- Result: Only users 1, 2, 3 appear (they have orders)
+-- Users 4 and 5 are excluded (no orders)</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Multiple Conditions in JOIN</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> You're building a churn model and need recent high-value orders for active premium users.
+                </p>
+                <pre><code class="language-sql">-- Join with multiple conditions
+-- Useful for filtering at join time (can be more efficient)
+SELECT 
+    u.name,
+    u.country,
+    o.order_id,
+    o.amount,
+    o.order_date
+FROM users u
+INNER JOIN orders o 
+    ON u.user_id = o.user_id          -- Primary join condition
+    AND u.premium = true               -- Additional filter
+    AND o.amount > 100                 -- Only high-value orders
+    AND o.order_date >= '2024-02-01'   -- Recent orders only
+ORDER BY o.amount DESC;
+
+-- This is more efficient than:
+-- WHERE u.premium = true AND o.amount > 100
+-- Because it filters during the join operation</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Self-JOIN for Comparisons</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Find pairs of users from the same country with similar ages (within 3 years) for A/B test matching.
+                </p>
+                <pre><code class="language-sql">-- Self-join: Join a table to itself
+-- Used for comparing rows within the same table
+SELECT 
+    u1.name AS user1,
+    u1.age AS age1,
+    u2.name AS user2,
+    u2.age AS age2,
+    u1.country,
+    ABS(u1.age - u2.age) AS age_difference
+FROM users u1
+INNER JOIN users u2 
+    ON u1.country = u2.country        -- Same country
+    AND u1.user_id < u2.user_id       -- Avoid duplicates and self-matches
+    AND ABS(u1.age - u2.age) <= 3     -- Age within 3 years
+ORDER BY u1.country, age_difference;
+
+-- This creates matched pairs for:
+-- 1. A/B testing with similar control/treatment groups
+-- 2. Collaborative filtering (similar users)
+-- 3. Peer analysis</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>Use INNER JOIN when you only want complete records. For training data, this ensures no missing values from related tables.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">↔️</span>
+                LEFT JOIN (Most Common!)
+            </h2>
+            <div class="card-content">
+                <p>LEFT JOIN keeps ALL rows from the left table, even if there's no match in the right table.</p>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic LEFT JOIN</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Get all users and their order counts, including users who haven't ordered yet.
+                </p>
+                <pre><code class="language-sql">-- Keep all users, even those without orders
+SELECT 
+    u.user_id,
+    u.name,
+    COUNT(o.order_id) AS order_count,  -- Will be 0 for users without orders
+    COALESCE(SUM(o.amount), 0) AS total_spent  -- Replace NULL with 0
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id
+GROUP BY u.user_id, u.name
+ORDER BY order_count DESC;
+
+-- Result includes ALL 5 users
+-- Users without orders show 0 for order_count and total_spent</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Finding Missing Relationships</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Identify inactive users (signed up but never ordered) for a re-engagement campaign.
+                </p>
+                <pre><code class="language-sql">-- Find users WITHOUT orders using LEFT JOIN and NULL check
+SELECT 
+    u.user_id,
+    u.name,
+    u.signup_date,
+    CURRENT_DATE - u.signup_date AS days_since_signup
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id
+WHERE o.order_id IS NULL  -- No matching order found
+ORDER BY u.signup_date;
+
+-- Alternative using NOT EXISTS (often faster)
+SELECT 
+    user_id,
+    name,
+    signup_date
+FROM users u
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM orders o 
+    WHERE o.user_id = u.user_id
+);
+
+-- Use this to create a "never_purchased" feature</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Multiple LEFT JOINs with Features</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Build a comprehensive user profile with orders, support tickets, and login activity for churn prediction.
+                </p>
+                <pre><code class="language-sql">-- Join multiple tables, keeping all users
+-- This creates a wide feature table for ML
+SELECT 
+    u.user_id,
+    u.name,
+    u.age,
+    u.country,
+    u.premium,
+    CURRENT_DATE - u.signup_date AS days_as_customer,
+    
+    -- Order features
+    COUNT(DISTINCT o.order_id) AS order_count,
+    COALESCE(SUM(o.amount), 0) AS lifetime_value,
+    COALESCE(AVG(o.amount), 0) AS avg_order_value,
+    MAX(o.order_date) AS last_order_date,
+    CURRENT_DATE - MAX(o.order_date) AS days_since_last_order,
+    
+    -- Support ticket features (assuming we have a tickets table)
+    COUNT(DISTINCT t.ticket_id) AS support_tickets,
+    SUM(CASE WHEN t.status = 'open' THEN 1 ELSE 0 END) AS open_tickets,
+    
+    -- Login activity features (assuming we have a logins table)
+    COUNT(DISTINCT l.login_date) AS login_days,
+    MAX(l.login_date) AS last_login,
+    
+    -- Derived engagement score
+    CASE 
+        WHEN COUNT(o.order_id) = 0 THEN 'inactive'
+        WHEN CURRENT_DATE - MAX(o.order_date) > 60 THEN 'at_risk'
+        WHEN COUNT(o.order_id) > 5 THEN 'power_user'
+        ELSE 'active'
+    END AS engagement_segment
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id
+LEFT JOIN tickets t ON u.user_id = t.user_id
+LEFT JOIN logins l ON u.user_id = l.user_id
+GROUP BY u.user_id, u.name, u.age, u.country, u.premium, u.signup_date
+ORDER BY lifetime_value DESC;
+
+-- This creates a feature-rich dataset with:
+-- - No data loss (all users included)
+-- - Behavioral metrics
+-- - Engagement indicators
+-- - Temporal features</code></pre>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">🔄</span>
+                Other JOIN Types
+            </h2>
+            <div class="card-content">
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ RIGHT JOIN</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Find all orders, even those with missing user data (data quality check).
+                </p>
+                <pre><code class="language-sql">-- RIGHT JOIN: Keep all rows from right table
+SELECT 
+    o.order_id,
+    o.amount,
+    u.name,
+    u.country
+FROM users u
+RIGHT JOIN orders o ON u.user_id = o.user_id;
+
+-- Same as LEFT JOIN with tables swapped
+-- Less common than LEFT JOIN</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ FULL OUTER JOIN</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Data quality audit - find users without orders AND orders without valid users.
+                </p>
+                <pre><code class="language-sql">-- FULL OUTER JOIN: Keep all rows from both tables
+SELECT 
+    u.user_id,
+    u.name,
+    o.order_id,
+    o.amount,
+    CASE 
+        WHEN u.user_id IS NULL THEN 'Orphaned order'
+        WHEN o.order_id IS NULL THEN 'User without orders'
+        ELSE 'Valid match'
+    END AS data_quality_status
+FROM users u
+FULL OUTER JOIN orders o ON u.user_id = o.user_id
+WHERE u.user_id IS NULL OR o.order_id IS NULL;
+
+-- Used for data quality checks and debugging</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ CROSS JOIN</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Generate all possible user-product combinations for a recommendation system matrix.
+                </p>
+                <pre><code class="language-sql">-- CROSS JOIN: Cartesian product (every row with every row)
+-- Creates all possible combinations
+SELECT 
+    u.user_id,
+    u.name,
+    p.product_id,
+    p.product_name,
+    -- Check if user has purchased this product
+    CASE 
+        WHEN o.order_id IS NOT NULL THEN 1 
+        ELSE 0 
+    END AS has_purchased
+FROM users u
+CROSS JOIN (
+    SELECT DISTINCT product AS product_name, 
+           ROW_NUMBER() OVER (ORDER BY product) AS product_id
+    FROM orders
+) p
+LEFT JOIN orders o 
+    ON u.user_id = o.user_id 
+    AND p.product_name = o.product;
+
+-- Creates a user-item matrix for collaborative filtering
+-- WARNING: Can be huge! Use with care on large tables</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>LEFT JOIN is your go-to for feature engineering. It preserves all your users/entities and safely handles missing related data with NULL values.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Practice Problems Section -->
+        <div id="problems-container" data-json-path="../data/joins.json"></div>
+        
+        <div class="nav-buttons">
+            <a href="aggregation.html" class="nav-btn" style="text-decoration: none;">← Aggregation</a>
+            <a href="subqueries.html" class="nav-btn" style="text-decoration: none;">Next: Subqueries →</a>
+        </div>
+    </div>
+    
+    <!-- Reference Panel -->
+    <div class="reference-panel" id="reference-panel">
+        <h3 class="reference-title">📋 Sample Data Reference</h3>
+        <div class="reference-table-section">
+            <h4>users table</h4>
+            <table>
+                <thead>
+                    <tr><th>user_id</th><th>name</th><th>age</th><th>country</th><th>signup_date</th><th>premium</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>Alice</td><td>28</td><td>USA</td><td>2024-01-15</td><td>true</td></tr>
+                    <tr><td>2</td><td>Bob</td><td>34</td><td>UK</td><td>2024-02-20</td><td>false</td></tr>
+                    <tr><td>3</td><td>Charlie</td><td>25</td><td>USA</td><td>2024-03-10</td><td>true</td></tr>
+                    <tr><td>4</td><td>Diana</td><td>31</td><td>Canada</td><td>2024-01-22</td><td>true</td></tr>
+                    <tr><td>5</td><td>Eve</td><td>29</td><td>UK</td><td>2024-04-05</td><td>false</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="reference-table-section">
+            <h4>orders table</h4>
+            <table>
+                <thead>
+                    <tr><th>order_id</th><th>user_id</th><th>product</th><th>amount</th><th>order_date</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>101</td><td>1</td><td>Laptop</td><td>1200</td><td>2024-02-01</td></tr>
+                    <tr><td>102</td><td>1</td><td>Mouse</td><td>25</td><td>2024-02-15</td></tr>
+                    <tr><td>103</td><td>2</td><td>Keyboard</td><td>75</td><td>2024-03-01</td></tr>
+                    <tr><td>104</td><td>3</td><td>Monitor</td><td>350</td><td>2024-03-20</td></tr>
+                    <tr><td>105</td><td>3</td><td>Laptop</td><td>1500</td><td>2024-04-10</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <button class="reference-toggle" onclick="toggleReference()" title="Toggle Reference Tables">📚</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/problem-renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,2612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Mastery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Prism.js for SQL syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #141b2d;
+            --bg-card: #1a2332;
+            --accent-blue: #00d4ff;
+            --accent-purple: #a78bfa;
+            --text-primary: #e8eaf6;
+            --text-secondary: #9ca3af;
+            --border: #2d3748;
+            --success: #10b981;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        /* Fixed Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .burger {
+            width: 44px;
+            height: 44px;
+            background: var(--bg-card);
+            border: 2px solid var(--accent-blue);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .burger:hover {
+            background: var(--accent-blue);
+        }
+        
+        .burger span {
+            width: 24px;
+            height: 2px;
+            background: var(--accent-blue);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        
+        .burger:hover span {
+            background: var(--bg-primary);
+        }
+        
+        .burger.active span:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+        }
+        
+        .burger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .burger.active span:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
+        }
+        
+        .title {
+            margin-left: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            letter-spacing: -0.5px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 70px;
+            bottom: 0;
+            width: 70px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            transition: width 0.3s ease;
+            overflow: hidden;
+            z-index: 999;
+        }
+        
+        .sidebar.expanded {
+            width: 280px;
+        }
+        
+        .nav-items {
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            position: relative;
+            white-space: nowrap;
+        }
+        
+        .nav-item:hover {
+            background: var(--bg-card);
+        }
+        
+        .nav-item.active {
+            background: var(--bg-card);
+            border-left-color: var(--accent-blue);
+        }
+        
+        .nav-icon {
+            font-size: 1.5rem;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .nav-text {
+            margin-left: 16px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .sidebar.expanded .nav-text {
+            opacity: 1;
+        }
+        
+        /* Main Content */
+        .main {
+            margin-left: 70px;
+            margin-top: 70px;
+            padding: 40px;
+            transition: margin-left 0.3s ease;
+            max-width: 1200px;
+        }
+        
+        .sidebar.expanded ~ .main {
+            margin-left: 280px;
+        }
+        
+        .section {
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-header {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .card-icon {
+            font-size: 1.8rem;
+        }
+        
+        .card-content {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+        
+        /* Code blocks */
+        pre {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        
+        code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        
+        /* Override Prism theme colors to match our design */
+        .token.comment {
+            color: #6272a4;
+            font-style: italic;
+        }
+        
+        .token.keyword,
+        .token.operator {
+            color: #ff79c6;
+            font-weight: 600;
+        }
+        
+        .token.function {
+            color: #50fa7b;
+        }
+        
+        .token.string {
+            color: #f1fa8c;
+        }
+        
+        .token.number {
+            color: #bd93f9;
+        }
+        
+        .token.punctuation {
+            color: #8be9fd;
+        }
+        
+        code[class*="language-"],
+        pre[class*="language-"] {
+            color: var(--text-primary);
+            background: transparent;
+        }
+        
+        /* Info boxes */
+        .info-box {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        
+        .info-box-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Navigation buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .nav-btn {
+            padding: 12px 24px;
+            background: var(--bg-card);
+            border: 2px solid var(--accent-blue);
+            border-radius: 8px;
+            color: var(--accent-blue);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover:not(:disabled) {
+            background: var(--accent-blue);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        /* Lists */
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        ul li {
+            padding: 8px 0 8px 28px;
+            position: relative;
+            color: var(--text-secondary);
+        }
+        
+        ul li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        
+        th {
+            background: var(--bg-primary);
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid var(--accent-blue);
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        tr:hover {
+            background: var(--bg-primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="burger" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">SQL Mastery</div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-items">
+            <div class="nav-item active" onclick="showSection(0)">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">Fundamentals</div>
+            </div>
+            <div class="nav-item" onclick="showSection(1)">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-text">Filtering</div>
+            </div>
+            <div class="nav-item" onclick="showSection(2)">
+                <div class="nav-icon">📊</div>
+                <div class="nav-text">Aggregation</div>
+            </div>
+            <div class="nav-item" onclick="showSection(3)">
+                <div class="nav-icon">🔗</div>
+                <div class="nav-text">Joins</div>
+            </div>
+            <div class="nav-item" onclick="showSection(4)">
+                <div class="nav-icon">🎯</div>
+                <div class="nav-text">Subqueries</div>
+            </div>
+            <div class="nav-item" onclick="showSection(5)">
+                <div class="nav-icon">📈</div>
+                <div class="nav-text">Window Functions</div>
+            </div>
+            <div class="nav-item" onclick="showSection(6)">
+                <div class="nav-icon">⚡</div>
+                <div class="nav-text">Advanced</div>
+            </div>
+            <div class="nav-item" onclick="showSection(7)">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-text">ML Focus</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main">
+        <!-- Section 1: Fundamentals -->
+        <div class="section active" id="section-0">
+            <div class="section-header">
+                <h1 class="section-title">SQL Fundamentals</h1>
+                <p class="section-subtitle">Building blocks of querying data</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">💾</span>
+                    What is SQL?
+                </h2>
+                <div class="card-content">
+                    <p>SQL (Structured Query Language) is the standard language for interacting with relational databases. For ML engineers, SQL is essential for:</p>
+                    <ul>
+                        <li>Extracting training data from production databases</li>
+                        <li>Feature engineering through data transformations</li>
+                        <li>Data quality checks and validation</li>
+                        <li>Analyzing model performance metrics</li>
+                        <li>Joining datasets from multiple sources</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">📋</span>
+                    Sample Data Structure
+                </h2>
+                <div class="card-content">
+                    <p>Throughout this guide, we'll use these example tables:</p>
+                    
+                    <h3 style="margin-top: 24px; margin-bottom: 12px;">users table</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>user_id</th>
+                                <th>name</th>
+                                <th>age</th>
+                                <th>country</th>
+                                <th>signup_date</th>
+                                <th>premium</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>Alice</td><td>28</td><td>USA</td><td>2024-01-15</td><td>true</td></tr>
+                            <tr><td>2</td><td>Bob</td><td>34</td><td>UK</td><td>2024-02-20</td><td>false</td></tr>
+                            <tr><td>3</td><td>Charlie</td><td>25</td><td>USA</td><td>2024-03-10</td><td>true</td></tr>
+                            <tr><td>4</td><td>Diana</td><td>31</td><td>Canada</td><td>2024-01-22</td><td>true</td></tr>
+                            <tr><td>5</td><td>Eve</td><td>29</td><td>UK</td><td>2024-04-05</td><td>false</td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <h3 style="margin-top: 24px; margin-bottom: 12px;">orders table</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>order_id</th>
+                                <th>user_id</th>
+                                <th>product</th>
+                                <th>amount</th>
+                                <th>order_date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>101</td><td>1</td><td>Laptop</td><td>1200</td><td>2024-02-01</td></tr>
+                            <tr><td>102</td><td>1</td><td>Mouse</td><td>25</td><td>2024-02-15</td></tr>
+                            <tr><td>103</td><td>2</td><td>Keyboard</td><td>75</td><td>2024-03-01</td></tr>
+                            <tr><td>104</td><td>3</td><td>Monitor</td><td>350</td><td>2024-03-20</td></tr>
+                            <tr><td>105</td><td>3</td><td>Laptop</td><td>1500</td><td>2024-04-10</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🎯</span>
+                    SELECT: Retrieving Data
+                </h2>
+                <div class="card-content">
+                    <p>The SELECT statement is the foundation of SQL - it retrieves data from tables.</p>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic SELECT</h3>
+                    <pre><code class="language-sql">-- Select specific columns from a table
+-- This retrieves only the columns you specify
+SELECT name, age 
+FROM users;
+
+-- Result: Returns name and age for all users
+-- Alice, 28
+-- Bob, 34
+-- Charlie, 25
+-- Diana, 31
+-- Eve, 29</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: SELECT with Expressions</h3>
+                    <pre><code class="language-sql">-- Use calculations and create aliases
+-- Aliases give meaningful names to calculated columns
+SELECT 
+    name,                              -- Original column
+    age,                               -- Original column
+    age * 12 AS age_in_months,        -- Calculate and rename with AS
+    UPPER(country) AS country_code,    -- Transform text to uppercase
+    CONCAT(name, ' (', age, ')') AS name_with_age  -- Combine columns
+FROM users;
+
+-- Result: Returns transformed and calculated values
+-- Alice, 28, 336, USA, Alice (28)
+-- Bob, 34, 408, UK, Bob (34)</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: SELECT with CASE Statements</h3>
+                    <pre><code class="language-sql">-- Create conditional columns (like if-else logic)
+-- CASE evaluates conditions and returns different values
+SELECT 
+    name,
+    age,
+    -- Categorize age into groups
+    CASE 
+        WHEN age < 25 THEN 'Young'       -- First condition checked
+        WHEN age BETWEEN 25 AND 30 THEN 'Mid'  -- Check if 25 ≤ age ≤ 30
+        ELSE 'Senior'                     -- Default if nothing matches
+    END AS age_group,
+    -- Create multiple calculated fields
+    CASE
+        WHEN premium = true AND age > 30 THEN 'High Value'
+        WHEN premium = true THEN 'Growing'
+        ELSE 'Standard'
+    END AS customer_segment,
+    -- Nested calculations
+    ROUND(
+        CASE 
+            WHEN age > 30 THEN age * 1.5 
+            ELSE age * 1.2 
+        END, 
+        2
+    ) AS weighted_age_score
+FROM users;
+
+-- This creates segments for targeting in ML models</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>Use CASE statements to create categorical features (like user segments) directly in SQL. This is faster than doing it in Python later!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">📦</span>
+                    DISTINCT & LIMIT
+                </h2>
+                <div class="card-content">
+                    <p>Control what rows you get back.</p>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Get Unique Values</h3>
+                    <pre><code class="language-sql">-- DISTINCT removes duplicate rows
+-- Useful for finding all unique values in a column
+SELECT DISTINCT country 
+FROM users;
+
+-- Result: USA, UK, Canada (only unique countries)
+
+-- Count unique values
+SELECT COUNT(DISTINCT country) AS unique_countries
+FROM users;
+-- Result: 3</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: LIMIT for Sampling</h3>
+                    <pre><code class="language-sql">-- LIMIT restricts the number of rows returned
+-- Great for testing queries on large datasets
+SELECT name, age, country
+FROM users
+ORDER BY signup_date DESC  -- Sort by newest first
+LIMIT 3;                    -- Only get top 3 rows
+
+-- LIMIT with OFFSET for pagination
+-- OFFSET skips the first N rows
+SELECT name, signup_date
+FROM users
+ORDER BY signup_date
+LIMIT 2 OFFSET 2;  -- Skip first 2, then get next 2
+
+-- This is like getting page 2 with page size of 2</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Combining DISTINCT with Multiple Columns</h3>
+                    <pre><code class="language-sql">-- DISTINCT on multiple columns finds unique combinations
+SELECT DISTINCT 
+    country,
+    -- Bucket age into ranges
+    CASE 
+        WHEN age < 30 THEN '20s'
+        WHEN age < 40 THEN '30s'
+        ELSE '40+'
+    END AS age_bucket,
+    premium
+FROM users
+ORDER BY country, age_bucket;
+
+-- This shows all unique combinations of country, age range, and premium status
+-- Useful for understanding data distribution before ML modeling</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>Use LIMIT when testing feature engineering queries on large datasets. Test with LIMIT 1000, then remove it for full dataset.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🔢</span>
+                    ORDER BY: Sorting Results
+                </h2>
+                <div class="card-content">
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic Sorting</h3>
+                    <pre><code class="language-sql">-- Sort rows by one column
+SELECT name, age
+FROM users
+ORDER BY age;  -- Default is ASC (ascending)
+
+-- Sort in descending order
+SELECT name, age
+FROM users
+ORDER BY age DESC;  -- Oldest first</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Multi-Column Sorting</h3>
+                    <pre><code class="language-sql">-- Sort by multiple columns
+-- First sorts by country, then within each country by age
+SELECT name, country, age
+FROM users
+ORDER BY 
+    country ASC,   -- Countries A-Z
+    age DESC;       -- Within each country, oldest first
+
+-- You can also use column numbers (not recommended in production)
+SELECT name, country, age
+FROM users
+ORDER BY 2, 3 DESC;  -- 2 = country, 3 = age</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Sorting with Expressions & NULLS</h3>
+                    <pre><code class="language-sql">-- Sort by calculated values
+SELECT 
+    name,
+    age,
+    signup_date,
+    -- Calculate days since signup
+    DATEDIFF(CURRENT_DATE, signup_date) AS days_active
+FROM users
+ORDER BY 
+    -- Custom sort order using CASE
+    CASE 
+        WHEN premium = true THEN 1  -- Premium users first
+        ELSE 2
+    END,
+    days_active DESC,  -- Then by most active
+    NULLS LAST;        -- Put NULL values at end
+
+-- Sort by complex conditions
+SELECT name, age, country
+FROM users
+ORDER BY 
+    -- Sort USA to top, then others alphabetically
+    CASE WHEN country = 'USA' THEN 0 ELSE 1 END,
+    country,
+    age DESC;</code></pre>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn" disabled>← Previous</button>
+                <button class="nav-btn" onclick="showSection(1)">Next →</button>
+            </div>
+        </div>
+        
+        <!-- Section 2: Filtering -->
+        <div class="section" id="section-1">
+            <div class="section-header">
+                <h1 class="section-title">Filtering Data</h1>
+                <p class="section-subtitle">WHERE clause and conditional logic</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🔍</span>
+                    WHERE Clause Basics
+                </h2>
+                <div class="card-content">
+                    <p>The WHERE clause filters rows based on conditions. Only rows that meet the condition are returned.</p>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Simple Conditions</h3>
+                    <pre><code class="language-sql">-- Filter by a single condition
+-- Only return users older than 28
+SELECT name, age, country
+FROM users
+WHERE age > 28;
+-- Result: Bob (34), Diana (31), Eve (29)
+
+-- Equality check
+SELECT name, country
+FROM users
+WHERE country = 'USA';
+-- Result: Alice, Charlie
+
+-- Not equal
+SELECT name, premium
+FROM users
+WHERE premium != true;  -- or: WHERE premium = false
+-- Result: Bob, Eve</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Combining Conditions</h3>
+                    <pre><code class="language-sql">-- AND: Both conditions must be true
+SELECT name, age, country
+FROM users
+WHERE age > 25 AND country = 'USA';
+-- All conditions connected with AND must be true
+-- Result: Alice (28, USA), Charlie (25 is NOT > 25, so excluded)
+
+-- OR: At least one condition must be true
+SELECT name, age, country
+FROM users
+WHERE age > 30 OR country = 'Canada';
+-- If ANY condition is true, row is included
+-- Result: Bob (34), Diana (Canada), 
+
+-- Combining AND & OR with parentheses
+-- Parentheses control the order of evaluation
+SELECT name, age, country, premium
+FROM users
+WHERE (age > 30 OR country = 'USA')  -- First evaluate this
+      AND premium = true;             -- Then AND with this
+-- Result: Alice (USA, premium), Diana (>30, premium)
+
+-- Without parentheses, AND is evaluated first!</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex Filtering</h3>
+                    <pre><code class="language-sql">-- Combine multiple logical operators
+SELECT 
+    name,
+    age,
+    country,
+    premium,
+    signup_date
+FROM users
+WHERE 
+    -- Complex nested conditions
+    (
+        (country IN ('USA', 'Canada') AND age BETWEEN 25 AND 30)
+        OR
+        (country = 'UK' AND premium = true)
+    )
+    AND signup_date >= '2024-02-01'  -- Further filter by date
+    AND name NOT LIKE 'B%';          -- Exclude names starting with B
+
+-- This creates a specific user segment for targeted analysis
+-- Useful for creating training datasets with specific characteristics</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>Use WHERE clauses to create balanced datasets. For example, filter by time periods to avoid data leakage, or by user segments to handle class imbalance.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🎯</span>
+                    Special Operators
+                </h2>
+                <div class="card-content">
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: BETWEEN & IN</h3>
+                    <pre><code class="language-sql">-- BETWEEN: Inclusive range (includes both boundaries)
+SELECT name, age
+FROM users
+WHERE age BETWEEN 25 AND 30;
+-- Same as: WHERE age >= 25 AND age <= 30
+-- Result: Charlie (25), Alice (28), Eve (29), Diana (31... wait, 31 is NOT included!)
+
+-- IN: Match any value in a list
+SELECT name, country
+FROM users
+WHERE country IN ('USA', 'UK');
+-- Same as: WHERE country = 'USA' OR country = 'UK'
+-- More efficient and readable than multiple ORs
+-- Result: Alice, Bob, Charlie, Eve
+
+-- NOT IN: Exclude values
+SELECT name, country
+FROM users
+WHERE country NOT IN ('USA');
+-- Result: Bob (UK), Diana (Canada), Eve (UK)</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: LIKE for Pattern Matching</h3>
+                    <pre><code class="language-sql">-- LIKE uses wildcards for pattern matching
+-- % = any number of characters (including zero)
+-- _ = exactly one character
+
+-- Names starting with 'A'
+SELECT name
+FROM users
+WHERE name LIKE 'A%';
+-- Result: Alice
+
+-- Names ending with 'e'
+SELECT name
+FROM users
+WHERE name LIKE '%e';
+-- Result: Alice, Charlie, Eve
+
+-- Names containing 'ar'
+SELECT name
+FROM users
+WHERE name LIKE '%ar%';
+-- Result: Charlie
+
+-- Names with exactly 3 characters
+SELECT name
+FROM users
+WHERE name LIKE '___';  -- Three underscores
+-- Result: Bob, Eve
+
+-- Case-insensitive search (depends on database)
+SELECT name
+FROM users
+WHERE LOWER(name) LIKE '%ali%';
+-- Converts name to lowercase before comparing
+-- Result: Alice</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: NULL Handling & Edge Cases</h3>
+                    <pre><code class="language-sql">-- IS NULL / IS NOT NULL
+-- NULL means "unknown" or "missing value"
+-- You CANNOT use = NULL (it won't work!)
+
+-- Find users with missing email
+SELECT name, age
+FROM users
+WHERE email IS NULL;
+
+-- Find users with email present
+SELECT name, email
+FROM users
+WHERE email IS NOT NULL;
+
+-- COALESCE: Handle NULL values
+-- Returns the first non-NULL value
+SELECT 
+    name,
+    COALESCE(email, 'no-email@example.com') AS email,
+    COALESCE(age, 0) AS age,
+    COALESCE(last_login, signup_date) AS last_active_date
+FROM users;
+
+-- Complex NULL filtering for data quality
+SELECT 
+    name,
+    age,
+    email,
+    country
+FROM users
+WHERE 
+    email IS NOT NULL           -- Has email
+    AND age IS NOT NULL         -- Has age
+    AND age > 0                 -- Age is valid
+    AND age < 120               -- Age is realistic
+    AND country IS NOT NULL     -- Has country
+    AND LENGTH(name) > 1        -- Name isn't just one character
+    AND signup_date >= '2024-01-01';  -- Recent signups
+
+-- This creates a clean dataset for ML training</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>Always handle NULLs explicitly in your feature engineering. Decide: filter them out, impute with COALESCE, or create an "is_null" indicator feature.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">📅</span>
+                    Date & Time Filtering
+                </h2>
+                <div class="card-content">
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic Date Comparisons</h3>
+                    <pre><code class="language-sql">-- Filter by specific date
+SELECT name, signup_date
+FROM users
+WHERE signup_date = '2024-01-15';
+
+-- Date ranges
+SELECT name, signup_date
+FROM users
+WHERE signup_date >= '2024-02-01' 
+  AND signup_date < '2024-03-01';  -- February 2024
+
+-- or using BETWEEN
+SELECT name, signup_date
+FROM users
+WHERE signup_date BETWEEN '2024-02-01' AND '2024-02-29';</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Date Functions</h3>
+                    <pre><code class="language-sql">-- Current date comparisons
+SELECT name, signup_date
+FROM users
+WHERE signup_date >= CURRENT_DATE - INTERVAL '30 days';
+-- Users who signed up in last 30 days
+
+-- Extract parts of dates
+SELECT 
+    name,
+    signup_date,
+    EXTRACT(YEAR FROM signup_date) AS signup_year,
+    EXTRACT(MONTH FROM signup_date) AS signup_month,
+    EXTRACT(DOW FROM signup_date) AS day_of_week  -- 0=Sunday
+FROM users
+WHERE EXTRACT(MONTH FROM signup_date) = 2;  -- February signups
+
+-- Date calculations
+SELECT name, signup_date
+FROM users
+WHERE DATE_TRUNC('month', signup_date) = '2024-02-01';
+-- All signups in February 2024</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex Time-Based Filtering</h3>
+                    <pre><code class="language-sql">-- Create time-based cohorts
+SELECT 
+    name,
+    signup_date,
+    -- Days since signup
+    CURRENT_DATE - signup_date AS days_active,
+    -- Categorize by signup quarter
+    CASE 
+        WHEN EXTRACT(MONTH FROM signup_date) <= 3 THEN 'Q1'
+        WHEN EXTRACT(MONTH FROM signup_date) <= 6 THEN 'Q2'
+        WHEN EXTRACT(MONTH FROM signup_date) <= 9 THEN 'Q3'
+        ELSE 'Q4'
+    END AS signup_quarter
+FROM users
+WHERE 
+    -- Signed up in last 90 days
+    signup_date >= CURRENT_DATE - INTERVAL '90 days'
+    -- But not in the last 7 days (to ensure enough activity data)
+    AND signup_date <= CURRENT_DATE - INTERVAL '7 days'
+    -- Only weekday signups
+    AND EXTRACT(DOW FROM signup_date) BETWEEN 1 AND 5;
+
+-- This creates a cohort for analyzing user behavior patterns</code></pre>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="showSection(0)">← Previous</button>
+                <button class="nav-btn" onclick="showSection(2)">Next →</button>
+            </div>
+        </div>
+        
+        <!-- Section 3: Aggregation -->
+        <div class="section" id="section-2">
+            <div class="section-header">
+                <h1 class="section-title">Aggregation & Grouping</h1>
+                <p class="section-subtitle">Summarizing data for insights</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">📊</span>
+                    Aggregate Functions
+                </h2>
+                <div class="card-content">
+                    <p>Aggregate functions perform calculations across multiple rows and return a single value.</p>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic Aggregations</h3>
+                    <pre><code class="language-sql">-- COUNT: Number of rows
+SELECT COUNT(*) AS total_users
+FROM users;
+-- Result: 5 (counts all rows including NULLs)
+
+-- COUNT with column name (skips NULLs)
+SELECT COUNT(email) AS users_with_email
+FROM users;
+-- Only counts non-NULL emails
+
+-- COUNT DISTINCT: Unique values
+SELECT COUNT(DISTINCT country) AS unique_countries
+FROM users;
+-- Result: 3 (USA, UK, Canada)
+
+-- Basic statistics
+SELECT 
+    COUNT(*) AS total_orders,      -- Total number of orders
+    SUM(amount) AS total_revenue,  -- Add up all amounts
+    AVG(amount) AS avg_order_value, -- Mean of amounts
+    MIN(amount) AS smallest_order,  -- Lowest amount
+    MAX(amount) AS largest_order    -- Highest amount
+FROM orders;
+-- Result: 5, 3150, 630, 25, 1500</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Aggregations with Conditions</h3>
+                    <pre><code class="language-sql">-- COUNT with WHERE
+SELECT COUNT(*) AS premium_users
+FROM users
+WHERE premium = true;
+-- Result: 3
+
+-- Conditional aggregations using CASE
+SELECT 
+    COUNT(*) AS total_users,
+    -- Count only premium users
+    COUNT(CASE WHEN premium = true THEN 1 END) AS premium_count,
+    -- Count only USA users
+    COUNT(CASE WHEN country = 'USA' THEN 1 END) AS usa_count,
+    -- Average age of premium users only
+    AVG(CASE WHEN premium = true THEN age END) AS avg_premium_age,
+    -- Sum orders over $500
+    SUM(CASE WHEN amount > 500 THEN amount ELSE 0 END) AS high_value_revenue
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id;
+
+-- Multiple aggregations with different filters
+SELECT 
+    AVG(age) AS overall_avg_age,
+    AVG(CASE WHEN country = 'USA' THEN age END) AS usa_avg_age,
+    AVG(CASE WHEN country = 'UK' THEN age END) AS uk_avg_age
+FROM users;</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Advanced Statistical Aggregations</h3>
+                    <pre><code class="language-sql">-- Statistical measures for feature engineering
+SELECT 
+    -- Central tendency
+    COUNT(*) AS n_orders,
+    AVG(amount) AS mean_amount,
+    -- Median using percentile_cont
+    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount) AS median_amount,
+    
+    -- Dispersion measures
+    STDDEV(amount) AS std_deviation,
+    VARIANCE(amount) AS variance,
+    MAX(amount) - MIN(amount) AS range_amount,
+    
+    -- Percentiles for outlier detection
+    PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY amount) AS q1,
+    PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY amount) AS q3,
+    
+    -- Coefficient of variation (relative variability)
+    CASE 
+        WHEN AVG(amount) > 0 THEN STDDEV(amount) / AVG(amount)
+        ELSE NULL
+    END AS coefficient_of_variation,
+    
+    -- Distribution shape
+    MIN(amount) AS min_val,
+    MAX(amount) AS max_val
+FROM orders;
+
+-- These metrics are useful for:
+-- 1. Understanding data distribution
+-- 2. Detecting outliers (using IQR method)
+-- 3. Feature scaling decisions
+-- 4. Identifying skewed distributions</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>Calculate statistical summaries in SQL to understand your feature distributions before modeling. Check for outliers, skewness, and missing values.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">📦</span>
+                    GROUP BY Fundamentals
+                </h2>
+                <div class="card-content">
+                    <p>GROUP BY organizes rows into groups based on column values, then applies aggregate functions to each group.</p>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Single Column Grouping</h3>
+                    <pre><code class="language-sql">-- Count users per country
+-- GROUP BY creates one row per unique country value
+SELECT 
+    country,
+    COUNT(*) AS user_count
+FROM users
+GROUP BY country;
+-- Result:
+-- USA, 2
+-- UK, 2
+-- Canada, 1
+
+-- Average age per country
+SELECT 
+    country,
+    AVG(age) AS avg_age,
+    COUNT(*) AS count
+FROM users
+GROUP BY country
+ORDER BY avg_age DESC;  -- ORDER BY comes after GROUP BY</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Multi-Column Grouping</h3>
+                    <pre><code class="language-sql">-- Group by multiple columns
+-- Creates one row per unique combination of country AND premium
+SELECT 
+    country,
+    premium,
+    COUNT(*) AS user_count,
+    AVG(age) AS avg_age
+FROM users
+GROUP BY country, premium  -- Both columns must be in GROUP BY
+ORDER BY country, premium;
+-- Result shows count and avg age for each country-premium combination
+
+-- Group with calculated columns
+SELECT 
+    country,
+    -- Create age buckets
+    CASE 
+        WHEN age < 30 THEN 'Young'
+        ELSE 'Older'
+    END AS age_group,
+    COUNT(*) AS count
+FROM users
+GROUP BY 
+    country, 
+    CASE WHEN age < 30 THEN 'Young' ELSE 'Older' END;
+-- Can use column alias or repeat the expression
+
+-- Aggregating order data by user
+SELECT 
+    user_id,
+    COUNT(*) AS order_count,
+    SUM(amount) AS total_spent,
+    AVG(amount) AS avg_order_value,
+    MIN(order_date) AS first_order,
+    MAX(order_date) AS last_order
+FROM orders
+GROUP BY user_id;</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex Grouping with Features</h3>
+                    <pre><code class="language-sql">-- Create comprehensive user features
+SELECT 
+    u.user_id,
+    u.name,
+    u.country,
+    u.premium,
+    
+    -- Order statistics
+    COUNT(o.order_id) AS total_orders,
+    COALESCE(SUM(o.amount), 0) AS lifetime_value,
+    COALESCE(AVG(o.amount), 0) AS avg_order_value,
+    COALESCE(STDDEV(o.amount), 0) AS order_value_std,
+    
+    -- Time-based features
+    MIN(o.order_date) AS first_order_date,
+    MAX(o.order_date) AS last_order_date,
+    MAX(o.order_date) - MIN(o.order_date) AS days_between_first_last,
+    
+    -- Behavioral features
+    COUNT(DISTINCT o.product) AS unique_products,
+    SUM(CASE WHEN o.amount > 500 THEN 1 ELSE 0 END) AS high_value_orders,
+    SUM(CASE WHEN o.amount < 100 THEN 1 ELSE 0 END) AS low_value_orders,
+    
+    -- Recency, Frequency, Monetary (RFM)
+    CURRENT_DATE - MAX(o.order_date) AS days_since_last_order,
+    COUNT(o.order_id) AS frequency,
+    COALESCE(SUM(o.amount), 0) AS monetary_value,
+    
+    -- Advanced metrics
+    CASE 
+        WHEN COUNT(o.order_id) > 0 THEN
+            COALESCE(SUM(o.amount), 0) / COUNT(o.order_id)
+        ELSE 0
+    END AS calculated_avg
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id
+GROUP BY u.user_id, u.name, u.country, u.premium
+-- All non-aggregated columns must be in GROUP BY
+ORDER BY lifetime_value DESC;
+
+-- This creates a feature-rich dataset for customer segmentation
+-- or churn prediction models</code></pre>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🎚️</span>
+                    HAVING: Filtering Groups
+                </h2>
+                <div class="card-content">
+                    <p>HAVING filters groups AFTER aggregation (WHERE filters rows BEFORE aggregation).</p>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic HAVING</h3>
+                    <pre><code class="language-sql">-- Find countries with more than 1 user
+SELECT 
+    country,
+    COUNT(*) AS user_count
+FROM users
+GROUP BY country
+HAVING COUNT(*) > 1;  -- Filters AFTER grouping
+-- Result: USA (2), UK (2)
+-- Canada (1) is excluded
+
+-- This is different from WHERE!
+-- WHERE filters before grouping
+-- HAVING filters after grouping</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: HAVING with Multiple Conditions</h3>
+                    <pre><code class="language-sql">-- Users with specific ordering patterns
+SELECT 
+    user_id,
+    COUNT(*) AS order_count,
+    SUM(amount) AS total_spent,
+    AVG(amount) AS avg_order
+FROM orders
+GROUP BY user_id
+HAVING 
+    COUNT(*) >= 2            -- At least 2 orders
+    AND SUM(amount) > 500    -- Spent over $500
+    AND AVG(amount) > 200;   -- Average order over $200
+-- Only returns users meeting ALL criteria
+
+-- Combining WHERE and HAVING
+SELECT 
+    country,
+    COUNT(*) AS user_count,
+    AVG(age) AS avg_age
+FROM users
+WHERE age > 25              -- Filter rows first (before grouping)
+GROUP BY country
+HAVING COUNT(*) > 1         -- Filter groups (after grouping)
+ORDER BY avg_age DESC;</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex HAVING Conditions</h3>
+                    <pre><code class="language-sql">-- Find user segments with interesting characteristics
+SELECT 
+    country,
+    premium,
+    COUNT(*) AS segment_size,
+    AVG(age) AS avg_age,
+    STDDEV(age) AS age_std,
+    MIN(age) AS min_age,
+    MAX(age) AS max_age
+FROM users
+WHERE signup_date >= '2024-01-01'  -- Recent signups only
+GROUP BY country, premium
+HAVING 
+    COUNT(*) >= 2                   -- Statistically meaningful segment
+    AND AVG(age) BETWEEN 25 AND 35  -- Target age range
+    AND STDDEV(age) < 5             -- Homogeneous age group
+    AND MAX(age) - MIN(age) < 10    -- Limited age spread
+ORDER BY segment_size DESC, avg_age;
+
+-- Advanced: HAVING with subqueries
+SELECT 
+    country,
+    COUNT(*) AS user_count,
+    AVG(age) AS avg_age
+FROM users
+GROUP BY country
+HAVING AVG(age) > (
+    -- Only countries with above-average avg age
+    SELECT AVG(age) FROM users
+)
+ORDER BY avg_age DESC;
+
+-- This identifies high-value segments for targeted modeling</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>Use HAVING to filter out groups with insufficient data. For example, exclude users with fewer than 5 transactions to ensure reliable behavioral features.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="showSection(1)">← Previous</button>
+                <button class="nav-btn" onclick="showSection(3)">Next →</button>
+            </div>
+        </div>
+        
+        <!-- Section 4: Joins -->
+        <div class="section" id="section-3">
+            <div class="section-header">
+                <h1 class="section-title">Joins</h1>
+                <p class="section-subtitle">Combining data from multiple tables</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🔗</span>
+                    INNER JOIN
+                </h2>
+                <div class="card-content">
+                    <p>INNER JOIN returns only rows that have matching values in both tables. Think of it as the intersection.</p>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic INNER JOIN</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> You need to get a list of all users who have placed orders, along with their order details.
+                    </p>
+                    <pre><code class="language-sql">-- Join users with their orders
+-- Only returns users who have at least one order
+SELECT 
+    u.user_id,              -- From users table (aliased as 'u')
+    u.name,
+    o.order_id,             -- From orders table (aliased as 'o')
+    o.product,
+    o.amount
+FROM users u                -- Left table
+INNER JOIN orders o         -- Right table
+    ON u.user_id = o.user_id;  -- Join condition: matching key
+
+-- Result: Only users 1, 2, 3 appear (they have orders)
+-- Users 4 and 5 are excluded (no orders)</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Multiple Conditions in JOIN</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> You're building a churn model and need recent high-value orders for active premium users.
+                    </p>
+                    <pre><code class="language-sql">-- Join with multiple conditions
+-- Useful for filtering at join time (can be more efficient)
+SELECT 
+    u.name,
+    u.country,
+    o.order_id,
+    o.amount,
+    o.order_date
+FROM users u
+INNER JOIN orders o 
+    ON u.user_id = o.user_id          -- Primary join condition
+    AND u.premium = true               -- Additional filter
+    AND o.amount > 100                 -- Only high-value orders
+    AND o.order_date >= '2024-02-01'   -- Recent orders only
+ORDER BY o.amount DESC;
+
+-- This is more efficient than:
+-- WHERE u.premium = true AND o.amount > 100
+-- Because it filters during the join operation</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Self-JOIN for Comparisons</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Find pairs of users from the same country with similar ages (within 3 years) for A/B test matching.
+                    </p>
+                    <pre><code class="language-sql">-- Self-join: Join a table to itself
+-- Used for comparing rows within the same table
+SELECT 
+    u1.name AS user1,
+    u1.age AS age1,
+    u2.name AS user2,
+    u2.age AS age2,
+    u1.country,
+    ABS(u1.age - u2.age) AS age_difference
+FROM users u1
+INNER JOIN users u2 
+    ON u1.country = u2.country        -- Same country
+    AND u1.user_id < u2.user_id       -- Avoid duplicates and self-matches
+    AND ABS(u1.age - u2.age) <= 3     -- Age within 3 years
+ORDER BY u1.country, age_difference;
+
+-- This creates matched pairs for:
+-- 1. A/B testing with similar control/treatment groups
+-- 2. Collaborative filtering (similar users)
+-- 3. Peer analysis</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>Use INNER JOIN when you only want complete records. For training data, this ensures no missing values from related tables.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">↔️</span>
+                    LEFT JOIN (Most Common!)
+                </h2>
+                <div class="card-content">
+                    <p>LEFT JOIN keeps ALL rows from the left table, even if there's no match in the right table.</p>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Basic LEFT JOIN</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Get all users and their order counts, including users who haven't ordered yet.
+                    </p>
+                    <pre><code class="language-sql">-- Keep all users, even those without orders
+SELECT 
+    u.user_id,
+    u.name,
+    COUNT(o.order_id) AS order_count,  -- Will be 0 for users without orders
+    COALESCE(SUM(o.amount), 0) AS total_spent  -- Replace NULL with 0
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id
+GROUP BY u.user_id, u.name
+ORDER BY order_count DESC;
+
+-- Result includes ALL 5 users
+-- Users without orders show 0 for order_count and total_spent</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Finding Missing Relationships</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Identify inactive users (signed up but never ordered) for a re-engagement campaign.
+                    </p>
+                    <pre><code class="language-sql">-- Find users WITHOUT orders using LEFT JOIN and NULL check
+SELECT 
+    u.user_id,
+    u.name,
+    u.signup_date,
+    CURRENT_DATE - u.signup_date AS days_since_signup
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id
+WHERE o.order_id IS NULL  -- No matching order found
+ORDER BY u.signup_date;
+
+-- Alternative using NOT EXISTS (often faster)
+SELECT 
+    user_id,
+    name,
+    signup_date
+FROM users u
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM orders o 
+    WHERE o.user_id = u.user_id
+);
+
+-- Use this to create a "never_purchased" feature</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Multiple LEFT JOINs with Features</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Build a comprehensive user profile with orders, support tickets, and login activity for churn prediction.
+                    </p>
+                    <pre><code class="language-sql">-- Join multiple tables, keeping all users
+-- This creates a wide feature table for ML
+SELECT 
+    u.user_id,
+    u.name,
+    u.age,
+    u.country,
+    u.premium,
+    CURRENT_DATE - u.signup_date AS days_as_customer,
+    
+    -- Order features
+    COUNT(DISTINCT o.order_id) AS order_count,
+    COALESCE(SUM(o.amount), 0) AS lifetime_value,
+    COALESCE(AVG(o.amount), 0) AS avg_order_value,
+    MAX(o.order_date) AS last_order_date,
+    CURRENT_DATE - MAX(o.order_date) AS days_since_last_order,
+    
+    -- Support ticket features (assuming we have a tickets table)
+    COUNT(DISTINCT t.ticket_id) AS support_tickets,
+    SUM(CASE WHEN t.status = 'open' THEN 1 ELSE 0 END) AS open_tickets,
+    
+    -- Login activity features (assuming we have a logins table)
+    COUNT(DISTINCT l.login_date) AS login_days,
+    MAX(l.login_date) AS last_login,
+    
+    -- Derived engagement score
+    CASE 
+        WHEN COUNT(o.order_id) = 0 THEN 'inactive'
+        WHEN CURRENT_DATE - MAX(o.order_date) > 60 THEN 'at_risk'
+        WHEN COUNT(o.order_id) > 5 THEN 'power_user'
+        ELSE 'active'
+    END AS engagement_segment
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id
+LEFT JOIN tickets t ON u.user_id = t.user_id
+LEFT JOIN logins l ON u.user_id = l.user_id
+GROUP BY u.user_id, u.name, u.age, u.country, u.premium, u.signup_date
+ORDER BY lifetime_value DESC;
+
+-- This creates a feature-rich dataset with:
+-- - No data loss (all users included)
+-- - Behavioral metrics
+-- - Engagement indicators
+-- - Temporal features</code></pre>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🔄</span>
+                    Other JOIN Types
+                </h2>
+                <div class="card-content">
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ RIGHT JOIN</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Find all orders, even those with missing user data (data quality check).
+                    </p>
+                    <pre><code class="language-sql">-- RIGHT JOIN: Keep all rows from right table
+SELECT 
+    o.order_id,
+    o.amount,
+    u.name,
+    u.country
+FROM users u
+RIGHT JOIN orders o ON u.user_id = o.user_id;
+
+-- Same as LEFT JOIN with tables swapped
+-- Less common than LEFT JOIN</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ FULL OUTER JOIN</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Data quality audit - find users without orders AND orders without valid users.
+                    </p>
+                    <pre><code class="language-sql">-- FULL OUTER JOIN: Keep all rows from both tables
+SELECT 
+    u.user_id,
+    u.name,
+    o.order_id,
+    o.amount,
+    CASE 
+        WHEN u.user_id IS NULL THEN 'Orphaned order'
+        WHEN o.order_id IS NULL THEN 'User without orders'
+        ELSE 'Valid match'
+    END AS data_quality_status
+FROM users u
+FULL OUTER JOIN orders o ON u.user_id = o.user_id
+WHERE u.user_id IS NULL OR o.order_id IS NULL;
+
+-- Used for data quality checks and debugging</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ CROSS JOIN</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Generate all possible user-product combinations for a recommendation system matrix.
+                    </p>
+                    <pre><code class="language-sql">-- CROSS JOIN: Cartesian product (every row with every row)
+-- Creates all possible combinations
+SELECT 
+    u.user_id,
+    u.name,
+    p.product_id,
+    p.product_name,
+    -- Check if user has purchased this product
+    CASE 
+        WHEN o.order_id IS NOT NULL THEN 1 
+        ELSE 0 
+    END AS has_purchased
+FROM users u
+CROSS JOIN (
+    SELECT DISTINCT product AS product_name, 
+           ROW_NUMBER() OVER (ORDER BY product) AS product_id
+    FROM orders
+) p
+LEFT JOIN orders o 
+    ON u.user_id = o.user_id 
+    AND p.product_name = o.product;
+
+-- Creates a user-item matrix for collaborative filtering
+-- WARNING: Can be huge! Use with care on large tables</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>LEFT JOIN is your go-to for feature engineering. It preserves all your users/entities and safely handles missing related data with NULL values.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="showSection(2)">← Previous</button>
+                <button class="nav-btn" onclick="showSection(4)">Next →</button>
+            </div>
+        </div>
+        
+        <!-- Section 5: Subqueries -->
+        <div class="section" id="section-4">
+            <div class="section-header">
+                <h1 class="section-title">Subqueries</h1>
+                <p class="section-subtitle">Nested queries for complex logic</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🎯</span>
+                    Subqueries in WHERE
+                </h2>
+                <div class="card-content">
+                    <p>Subqueries allow you to use the result of one query inside another query.</p>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Single Value Subquery</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Find all users older than the average age (for age-based segmentation).
+                    </p>
+                    <pre><code class="language-sql">-- Subquery returns a single value (average age)
+SELECT name, age, country
+FROM users
+WHERE age > (
+    SELECT AVG(age)   -- This runs first, returns one number
+    FROM users
+);
+
+-- Execution order:
+-- 1. Inner query calculates AVG(age) = 29.4
+-- 2. Outer query finds users WHERE age > 29.4
+-- Result: Bob (34), Diana (31)</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Subquery with IN</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Find users who have made high-value purchases (over $500) for VIP targeting.
+                    </p>
+                    <pre><code class="language-sql">-- Subquery returns multiple values
+SELECT 
+    user_id,
+    name,
+    age,
+    country
+FROM users
+WHERE user_id IN (
+    -- Get all user_ids with orders over $500
+    SELECT DISTINCT user_id
+    FROM orders
+    WHERE amount > 500
+);
+-- Result: Alice (Laptop: 1200), Charlie (Laptop: 1500)
+
+-- Compare with NOT IN for opposite
+SELECT name, age
+FROM users
+WHERE user_id NOT IN (
+    SELECT DISTINCT user_id
+    FROM orders
+    WHERE amount > 500
+);
+-- Result: Bob, Diana, Eve (no high-value purchases)
+
+-- Alternative using EXISTS (often faster)
+SELECT u.name, u.age
+FROM users u
+WHERE EXISTS (
+    SELECT 1  -- We don't care what's returned, just if it exists
+    FROM orders o
+    WHERE o.user_id = u.user_id
+    AND o.amount > 500
+);</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Correlated Subquery</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Find users whose average order value is above their country's average (top performers by region).
+                    </p>
+                    <pre><code class="language-sql">-- Correlated subquery: references outer query
+-- Runs once for EACH row in outer query (can be slow!)
+SELECT 
+    u.user_id,
+    u.name,
+    u.country,
+    (
+        -- User's personal average
+        SELECT AVG(amount)
+        FROM orders o1
+        WHERE o1.user_id = u.user_id
+    ) AS user_avg_order,
+    (
+        -- Country average (calculated for this user's country)
+        SELECT AVG(o2.amount)
+        FROM orders o2
+        INNER JOIN users u2 ON o2.user_id = u2.user_id
+        WHERE u2.country = u.country  -- References outer query!
+    ) AS country_avg_order
+FROM users u
+WHERE (
+    SELECT AVG(amount)
+    FROM orders o
+    WHERE o.user_id = u.user_id
+) > (
+    SELECT AVG(o2.amount)
+    FROM orders o2
+    INNER JOIN users u2 ON o2.user_id = u2.user_id
+    WHERE u2.country = u.country
+);
+
+-- This finds "above-average performers" within their region
+-- Useful for identifying outliers and regional champions</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>Use EXISTS instead of IN when checking for existence. It's often faster because it stops at the first match. Use NOT EXISTS to find missing relationships.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">📋</span>
+                    Subqueries in SELECT & FROM
+                </h2>
+                <div class="card-content">
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Subquery in SELECT</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Show each user alongside the total number of users (for percentile calculations).
+                    </p>
+                    <pre><code class="language-sql">-- Subquery in SELECT creates a calculated column
+SELECT 
+    name,
+    age,
+    country,
+    (SELECT COUNT(*) FROM users) AS total_users,
+    (SELECT AVG(age) FROM users) AS avg_age_all_users,
+    age - (SELECT AVG(age) FROM users) AS age_deviation
+FROM users;
+
+-- Each row shows its value plus aggregate statistics
+-- Useful for feature engineering: "distance from mean"</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Subquery in FROM (Derived Table)</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Calculate order statistics first, then filter users based on those aggregations.
+                    </p>
+                    <pre><code class="language-sql">-- Subquery in FROM creates a temporary table
+SELECT 
+    u.name,
+    u.country,
+    order_stats.order_count,
+    order_stats.total_spent,
+    order_stats.avg_order
+FROM users u
+INNER JOIN (
+    -- This subquery runs first and creates a temporary result
+    SELECT 
+        user_id,
+        COUNT(*) AS order_count,
+        SUM(amount) AS total_spent,
+        AVG(amount) AS avg_order
+    FROM orders
+    GROUP BY user_id
+    HAVING COUNT(*) >= 2  -- Only users with 2+ orders
+) AS order_stats ON u.user_id = order_stats.user_id
+WHERE order_stats.total_spent > 500;
+
+-- Benefits:
+-- 1. Break complex queries into logical steps
+-- 2. Filter aggregated data before joining
+-- 3. More readable than one giant query</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Multiple Nested Subqueries</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Build a customer RFM (Recency, Frequency, Monetary) segmentation for retention campaigns.
+                    </p>
+                    <pre><code class="language-sql">-- Create RFM scores using subqueries
+SELECT 
+    name,
+    country,
+    rfm_data.recency_days,
+    rfm_data.frequency,
+    rfm_data.monetary,
+    -- Score each dimension (1-5, where 5 is best)
+    CASE 
+        WHEN rfm_data.recency_days <= 30 THEN 5
+        WHEN rfm_data.recency_days <= 60 THEN 4
+        WHEN rfm_data.recency_days <= 90 THEN 3
+        WHEN rfm_data.recency_days <= 180 THEN 2
+        ELSE 1
+    END AS recency_score,
+    CASE 
+        WHEN rfm_data.frequency >= (SELECT PERCENTILE_CONT(0.8) WITHIN GROUP (ORDER BY frequency) 
+                                    FROM (SELECT user_id, COUNT(*) as frequency 
+                                          FROM orders GROUP BY user_id) f) THEN 5
+        WHEN rfm_data.frequency >= (SELECT PERCENTILE_CONT(0.6) WITHIN GROUP (ORDER BY frequency) 
+                                    FROM (SELECT user_id, COUNT(*) as frequency 
+                                          FROM orders GROUP BY user_id) f) THEN 4
+        WHEN rfm_data.frequency >= (SELECT PERCENTILE_CONT(0.4) WITHIN GROUP (ORDER BY frequency) 
+                                    FROM (SELECT user_id, COUNT(*) as frequency 
+                                          FROM orders GROUP BY user_id) f) THEN 3
+        WHEN rfm_data.frequency >= (SELECT PERCENTILE_CONT(0.2) WITHIN GROUP (ORDER BY frequency) 
+                                    FROM (SELECT user_id, COUNT(*) as frequency 
+                                          FROM orders GROUP BY user_id) f) THEN 2
+        ELSE 1
+    END AS frequency_score,
+    CASE 
+        WHEN rfm_data.monetary >= 1000 THEN 5
+        WHEN rfm_data.monetary >= 500 THEN 4
+        WHEN rfm_data.monetary >= 200 THEN 3
+        WHEN rfm_data.monetary >= 50 THEN 2
+        ELSE 1
+    END AS monetary_score
+FROM users u
+INNER JOIN (
+    -- Calculate RFM metrics for each user
+    SELECT 
+        user_id,
+        CURRENT_DATE - MAX(order_date) AS recency_days,
+        COUNT(*) AS frequency,
+        SUM(amount) AS monetary
+    FROM orders
+    GROUP BY user_id
+) rfm_data ON u.user_id = rfm_data.user_id
+ORDER BY 
+    recency_score DESC,
+    frequency_score DESC,
+    monetary_score DESC;
+
+-- Creates customer segments:
+-- 555 = Champions, 111 = Hibernating, etc.</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>Subqueries in FROM are great for feature engineering. Calculate intermediate features first, then use them in more complex calculations. Consider using CTEs (next section) for better readability.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="showSection(3)">← Previous</button>
+                <button class="nav-btn" onclick="showSection(5)">Next →</button>
+            </div>
+        </div>
+        
+        <!-- Section 6: Window Functions -->
+        <div class="section" id="section-5">
+            <div class="section-header">
+                <h1 class="section-title">Window Functions</h1>
+                <p class="section-subtitle">Advanced analytics without grouping</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">📈</span>
+                    ROW_NUMBER, RANK, DENSE_RANK
+                </h2>
+                <div class="card-content">
+                    <p>Window functions perform calculations across rows while keeping all row details (unlike GROUP BY which collapses rows).</p>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: ROW_NUMBER Basics</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Rank each user's orders by amount to find their top purchase.
+                    </p>
+                    <pre><code class="language-sql">-- ROW_NUMBER assigns unique sequential numbers
+SELECT 
+    user_id,
+    order_id,
+    product,
+    amount,
+    order_date,
+    -- Assign row number within each user's orders
+    ROW_NUMBER() OVER (
+        PARTITION BY user_id   -- Separate numbering for each user
+        ORDER BY amount DESC   -- Highest amount gets #1
+    ) AS order_rank
+FROM orders
+ORDER BY user_id, order_rank;
+
+-- PARTITION BY: Creates separate "windows" for each user
+-- ORDER BY: Determines the ranking order
+-- Result: Each user's orders numbered 1, 2, 3...</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: RANK vs DENSE_RANK</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Find the top 3 highest-value orders per user, handling ties appropriately.
+                    </p>
+                    <pre><code class="language-sql">-- Compare different ranking functions
+SELECT 
+    user_id,
+    order_id,
+    amount,
+    -- ROW_NUMBER: Always unique (1,2,3,4,5)
+    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY amount DESC) AS row_num,
+    
+    -- RANK: Ties get same rank, then skips (1,2,2,4,5)
+    RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) AS rank,
+    
+    -- DENSE_RANK: Ties get same rank, no skip (1,2,2,3,4)
+    DENSE_RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) AS dense_rank
+FROM orders
+ORDER BY user_id, amount DESC;
+
+-- Get only top 3 orders per user
+SELECT *
+FROM (
+    SELECT 
+        user_id,
+        order_id,
+        product,
+        amount,
+        ROW_NUMBER() OVER (
+            PARTITION BY user_id 
+            ORDER BY amount DESC
+        ) AS rn
+    FROM orders
+) ranked
+WHERE rn <= 3;  -- Filter after ranking
+
+-- Use case: "Show user's top 3 most expensive purchases"</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex Ranking Features</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Create sequence-based features: is this order in top 25%? What percentile? Is it getting better over time?
+                    </p>
+                    <pre><code class="language-sql">-- Generate sophisticated ranking features
+SELECT 
+    user_id,
+    order_id,
+    product,
+    amount,
+    order_date,
+    
+    -- Basic rankings
+    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date) AS order_sequence,
+    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY amount DESC) AS value_rank,
+    
+    -- Percentile ranking (0-1 scale)
+    PERCENT_RANK() OVER (PARTITION BY user_id ORDER BY amount) AS amount_percentile,
+    
+    -- Divide into quartiles/deciles
+    NTILE(4) OVER (PARTITION BY user_id ORDER BY amount) AS amount_quartile,
+    NTILE(10) OVER (PARTITION BY user_id ORDER BY order_date) AS time_decile,
+    
+    -- Is this a top performer?
+    CASE 
+        WHEN PERCENT_RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) <= 0.25 
+        THEN 'Top 25%'
+        WHEN PERCENT_RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) <= 0.50 
+        THEN 'Top 50%'
+        ELSE 'Bottom 50%'
+    END AS value_segment,
+    
+    -- Compare to user's first order
+    amount - FIRST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS growth_from_first_order,
+    
+    -- Count orders so far (cumulative)
+    COUNT(*) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS orders_so_far
+FROM orders
+ORDER BY user_id, order_date;
+
+-- These features are gold for ML:
+-- - User purchase progression
+-- - Spending trajectory
+-- - Engagement patterns</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>Window functions are perfect for time-series features: "user's Nth purchase amount", "days between orders", "running average", etc. They preserve row-level detail unlike GROUP BY.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">📊</span>
+                    Aggregate Window Functions
+                </h2>
+                <div class="card-content">
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Running Totals</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Calculate cumulative revenue over time for growth analysis.
+                    </p>
+                    <pre><code class="language-sql">-- Running total (cumulative sum)
+SELECT 
+    order_id,
+    user_id,
+    order_date,
+    amount,
+    -- Cumulative sum up to current row
+    SUM(amount) OVER (
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS running_total,
+    -- Can also write as:
+    SUM(amount) OVER (ORDER BY order_date) AS running_total_short
+FROM orders
+ORDER BY order_date;
+
+-- Running total per user
+SELECT 
+    order_id,
+    user_id,
+    order_date,
+    amount,
+    SUM(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS user_running_total
+FROM orders
+ORDER BY user_id, order_date;
+
+-- Track: "How much has this user spent so far?"</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Moving Averages</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Calculate 7-day and 30-day moving averages for trend analysis.
+                    </p>
+                    <pre><code class="language-sql">-- Moving averages with window frames
+SELECT 
+    order_date,
+    user_id,
+    amount,
+    
+    -- Average of last 3 orders (including current)
+    AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS moving_avg_3_orders,
+    
+    -- Average of current and next 2 orders (forward looking)
+    AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN CURRENT ROW AND 2 FOLLOWING
+    ) AS forward_avg_3_orders,
+    
+    -- Centered moving average
+    AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+    ) AS centered_avg_3_orders,
+    
+    -- Compare to overall user average
+    AVG(amount) OVER (PARTITION BY user_id) AS user_overall_avg,
+    
+    -- Deviation from moving average
+    amount - AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS deviation_from_trend
+FROM orders
+ORDER BY user_id, order_date;
+
+-- Window frame options:
+-- ROWS: Physical rows (count)
+-- RANGE: Logical range (values)
+-- UNBOUNDED PRECEDING: Start of partition
+-- CURRENT ROW: Current row
+-- N PRECEDING/FOLLOWING: N rows before/after</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex Aggregations & Comparisons</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Build features comparing each order to historical patterns for anomaly detection.
+                    </p>
+                    <pre><code class="language-sql">-- Comprehensive window analytics
+SELECT 
+    order_id,
+    user_id,
+    product,
+    order_date,
+    amount,
+    
+    -- Historical statistics (all previous orders)
+    AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+    ) AS historical_avg,
+    
+    STDDEV(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+    ) AS historical_std,
+    
+    -- Z-score for current order (anomaly detection)
+    CASE 
+        WHEN STDDEV(amount) OVER (
+            PARTITION BY user_id
+            ORDER BY order_date
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+        ) > 0 THEN
+            (amount - AVG(amount) OVER (
+                PARTITION BY user_id
+                ORDER BY order_date
+                ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+            )) / STDDEV(amount) OVER (
+                PARTITION BY user_id
+                ORDER BY order_date
+                ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+            )
+        ELSE NULL
+    END AS z_score,
+    
+    -- Trend indicators
+    amount > AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN 3 PRECEDING AND 1 PRECEDING
+    ) AS above_recent_avg,
+    
+    -- Percentage change from last order
+    100.0 * (amount - LAG(amount) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    )) / NULLIF(LAG(amount) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    ), 0) AS pct_change_from_last,
+    
+    -- Running statistics
+    COUNT(*) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS order_count_so_far,
+    
+    MIN(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS min_so_far,
+    
+    MAX(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS max_so_far
+FROM orders
+ORDER BY user_id, order_date;
+
+-- Flag anomalies: |z_score| > 2 indicates unusual behavior</code></pre>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">↔️</span>
+                    LAG, LEAD, FIRST_VALUE, LAST_VALUE
+                </h2>
+                <div class="card-content">
+                    <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: LAG & LEAD</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Calculate time between consecutive orders for frequency analysis.
+                    </p>
+                    <pre><code class="language-sql">-- Access previous and next row values
+SELECT 
+    user_id,
+    order_id,
+    order_date,
+    amount,
+    
+    -- Previous order details
+    LAG(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS previous_order_date,
+    
+    LAG(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS previous_order_amount,
+    
+    -- Days since last order
+    order_date - LAG(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS days_since_last_order,
+    
+    -- Next order details (for forward-looking features)
+    LEAD(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS next_order_date,
+    
+    -- Days until next order
+    LEAD(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) - order_date AS days_until_next_order
+FROM orders
+ORDER BY user_id, order_date;
+
+-- LAG(column, n): Access value n rows before
+-- LEAD(column, n): Access value n rows after
+-- Default n = 1</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: FIRST_VALUE & LAST_VALUE</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Compare each order to user's first and most recent orders.
+                    </p>
+                    <pre><code class="language-sql">-- Access first and last values in window
+SELECT 
+    user_id,
+    order_id,
+    order_date,
+    amount,
+    
+    -- First order ever
+    FIRST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS first_order_amount,
+    
+    FIRST_VALUE(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS first_order_date,
+    
+    -- Most recent order
+    LAST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS latest_order_amount,
+    
+    -- Growth metrics
+    amount - FIRST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS amount_change_from_first,
+    
+    100.0 * (amount - FIRST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    )) / NULLIF(FIRST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ), 0) AS pct_growth_from_first
+FROM orders
+ORDER BY user_id, order_date;
+
+-- Note: LAST_VALUE needs full window frame or it only sees current row!</code></pre>
+                    
+                    <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Cohort Analysis with Windows</h3>
+                    <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                        <strong>Problem:</strong> Build a complete user journey dataset for churn prediction modeling.
+                    </p>
+                    <pre><code class="language-sql">-- Comprehensive user journey features
+SELECT 
+    user_id,
+    order_id,
+    product,
+    order_date,
+    amount,
+    
+    -- Position in journey
+    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date) AS order_number,
+    
+    -- Time-based features
+    order_date - FIRST_VALUE(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS days_since_first_order,
+    
+    LAG(order_date) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    ) AS prev_order_date,
+    
+    order_date - LAG(order_date) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    ) AS days_since_prev_order,
+    
+    -- Moving average of inter-order time
+    AVG(order_date - LAG(order_date) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    )) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+    ) AS avg_inter_order_days,
+    
+    -- Value trajectory
+    amount - LAG(amount) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    ) AS value_change,
+    
+    AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+    ) AS moving_avg_value,
+    
+    -- Is spending accelerating?
+    CASE 
+        WHEN ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date) = 1 THEN NULL
+        WHEN order_date - LAG(order_date) OVER (
+            PARTITION BY user_id ORDER BY order_date
+        ) < AVG(order_date - LAG(order_date) OVER (
+            PARTITION BY user_id ORDER BY order_date
+        )) OVER (
+            PARTITION BY user_id 
+            ORDER BY order_date
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+        ) THEN 'Accelerating'
+        ELSE 'Slowing'
+    END AS purchase_frequency_trend,
+    
+    -- Product diversity
+    COUNT(DISTINCT product) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS unique_products_so_far,
+    
+    -- Cumulative value
+    SUM(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+    ) AS cumulative_value
+FROM orders
+ORDER BY user_id, order_date;
+
+-- This creates a feature-rich event stream for:
+-- - Sequential modeling (LSTM, GRU)
+-- - Churn prediction
+-- - Next purchase prediction
+-- - Customer lifetime value forecasting</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>LAG/LEAD are essential for creating "deltas" and "rates of change" features. Use them to capture momentum, velocity, and acceleration in user behavior.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="showSection(4)">← Previous</button>
+                <button class="nav-btn" onclick="showSection(6)">Next →</button>
+            </div>
+        </div>
+        
+        <!-- Section 7: Advanced -->
+        <div class="section" id="section-6">
+            <div class="section-header">
+                <h1 class="section-title">Advanced Topics</h1>
+                <p class="section-subtitle">CTEs, unions, and optimization</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">⚡</span>
+                    Common Table Expressions (CTE)
+                </h2>
+                <div class="card-content">
+                    <p>Named temporary result sets for cleaner queries:</p>
+                    
+                    <pre><code class="language-sql">-- Multiple CTEs
+WITH user_stats AS (
+    SELECT 
+        user_id,
+        COUNT(*) as order_count,
+        SUM(amount) as total_spent
+    FROM orders
+    GROUP BY user_id
+),
+high_value_users AS (
+    SELECT user_id
+    FROM user_stats
+    WHERE total_spent > 1000
+)
+SELECT u.name, us.order_count, us.total_spent
+FROM users u
+INNER JOIN high_value_users hvu ON u.user_id = hvu.user_id
+INNER JOIN user_stats us ON u.user_id = us.user_id;</code></pre>
+                    
+                    <div class="info-box">
+                        <div class="info-box-title">💡 ML Engineer Tip</div>
+                        <p>CTEs make complex feature engineering readable and maintainable. Break down your feature creation into logical steps.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🔀</span>
+                    UNION & UNION ALL
+                </h2>
+                <div class="card-content">
+                    <p>Combine results from multiple queries:</p>
+                    
+                    <pre><code class="language-sql">-- Combine data from different sources
+SELECT user_id, 'web' as source FROM web_users
+UNION ALL
+SELECT user_id, 'mobile' as source FROM mobile_users;</code></pre>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🚀</span>
+                    Query Optimization Tips
+                </h2>
+                <div class="card-content">
+                    <ul>
+                        <li>Use indexes on columns in WHERE, JOIN, and ORDER BY</li>
+                        <li>Avoid SELECT * - specify only needed columns</li>
+                        <li>Filter early with WHERE before joins when possible</li>
+                        <li>Use EXPLAIN to analyze query execution plans</li>
+                        <li>Consider materialized views for repeated calculations</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="showSection(5)">← Previous</button>
+                <button class="nav-btn" onclick="showSection(7)">Next →</button>
+            </div>
+        </div>
+        
+        <!-- Section 8: ML Focus -->
+        <div class="section" id="section-7">
+            <div class="section-header">
+                <h1 class="section-title">ML Engineer Focus</h1>
+                <p class="section-subtitle">SQL patterns for machine learning workflows</p>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🤖</span>
+                    Feature Engineering in SQL
+                </h2>
+                <div class="card-content">
+                    <p>Create ML features directly in SQL:</p>
+                    
+                    <pre><code class="language-sql">-- User behavior features
+WITH user_features AS (
+    SELECT 
+        u.user_id,
+        u.age,
+        u.country,
+        COUNT(o.order_id) as order_count,
+        SUM(o.amount) as lifetime_value,
+        AVG(o.amount) as avg_order_value,
+        MAX(o.order_date) as last_order_date,
+        DATEDIFF(CURRENT_DATE, MAX(o.order_date)) as days_since_last_order,
+        DATEDIFF(MAX(o.order_date), MIN(o.order_date)) as customer_lifetime_days
+    FROM users u
+    LEFT JOIN orders o ON u.user_id = o.user_id
+    GROUP BY u.user_id, u.age, u.country
+)
+SELECT *,
+    lifetime_value / NULLIF(customer_lifetime_days, 0) as daily_value
+FROM user_features;</code></pre>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">📊</span>
+                    Time-Based Features
+                </h2>
+                <div class="card-content">
+                    <p>Extract temporal patterns:</p>
+                    
+                    <pre><code class="language-sql">-- Time-based aggregations
+SELECT 
+    user_id,
+    COUNT(CASE WHEN order_date >= CURRENT_DATE - 7 THEN 1 END) as orders_last_7d,
+    COUNT(CASE WHEN order_date >= CURRENT_DATE - 30 THEN 1 END) as orders_last_30d,
+    AVG(CASE WHEN order_date >= CURRENT_DATE - 30 THEN amount END) as avg_amount_30d,
+    EXTRACT(HOUR FROM order_timestamp) as hour_of_day,
+    EXTRACT(DOW FROM order_date) as day_of_week
+FROM orders
+GROUP BY user_id;</code></pre>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🎯</span>
+                    Train/Test Split
+                </h2>
+                <div class="card-content">
+                    <p>Create temporal splits for time-series data:</p>
+                    
+                    <pre><code class="language-sql">-- Time-based split
+SELECT *,
+    CASE 
+        WHEN order_date < '2024-01-01' THEN 'train'
+        WHEN order_date < '2024-03-01' THEN 'validation'
+        ELSE 'test'
+    END as dataset_split
+FROM user_features;
+
+-- Random split (use with caution for time-series)
+SELECT *,
+    CASE 
+        WHEN MOD(user_id, 10) < 7 THEN 'train'
+        WHEN MOD(user_id, 10) < 9 THEN 'validation'
+        ELSE 'test'
+    END as dataset_split
+FROM user_features;</code></pre>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">🔍</span>
+                    Data Quality Checks
+                </h2>
+                <div class="card-content">
+                    <p>Validate data before training:</p>
+                    
+                    <pre><code class="language-sql">-- Check for missing values
+SELECT 
+    COUNT(*) as total_rows,
+    SUM(CASE WHEN age IS NULL THEN 1 ELSE 0 END) as missing_age,
+    SUM(CASE WHEN email IS NULL THEN 1 ELSE 0 END) as missing_email
+FROM users;
+
+-- Check for duplicates
+SELECT user_id, COUNT(*) as duplicate_count
+FROM users
+GROUP BY user_id
+HAVING COUNT(*) > 1;
+
+-- Check for outliers
+SELECT 
+    MIN(amount) as min_amount,
+    MAX(amount) as max_amount,
+    AVG(amount) as avg_amount,
+    STDDEV(amount) as stddev_amount
+FROM orders;</code></pre>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="card-icon">💡</span>
+                    Best Practices for ML Workflows
+                </h2>
+                <div class="card-content">
+                    <ul>
+                        <li>Use CTEs to organize feature engineering steps</li>
+                        <li>Document your features with clear column names</li>
+                        <li>Handle NULL values explicitly (COALESCE, NULLIF)</li>
+                        <li>Be mindful of data leakage in time-series</li>
+                        <li>Version your feature queries like code</li>
+                        <li>Test queries on small samples first</li>
+                        <li>Use window functions for sequence features</li>
+                        <li>Consider creating views for reusable feature sets</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="showSection(6)">← Previous</button>
+                <button class="nav-btn" disabled>Next →</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Prism.js for SQL syntax highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    
+    <script>
+        let currentSection = 0;
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const burger = document.querySelector('.burger');
+            sidebar.classList.toggle('expanded');
+            burger.classList.toggle('active');
+        }
+        
+        function showSection(index) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById('section-' + index).classList.add('active');
+            document.querySelectorAll('.nav-item')[index].classList.add('active');
+            
+            currentSection = index;
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' && currentSection > 0) {
+                showSection(currentSection - 1);
+            } else if (e.key === 'ArrowRight' && currentSection < 7) {
+                showSection(currentSection + 1);
+            }
+        });
+    </script>
+</body>
+</html>

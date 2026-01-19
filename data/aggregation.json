@@ -1,0 +1,53 @@
+{
+  "section": "Aggregation & Grouping",
+  "problems": [
+    {
+      "difficulty": "Easy",
+      "icon": "📊",
+      "title": "Count Total Orders",
+      "description": "Calculate the total number of orders in the orders table.",
+      "solution": "SELECT COUNT(*) AS total_orders\nFROM orders;",
+      "explanation": "COUNT(*) returns the number of rows in the result set."
+    },
+    {
+      "difficulty": "Easy",
+      "icon": "💰",
+      "title": "Calculate Total Revenue",
+      "description": "Find the total revenue (sum of all order amounts).",
+      "solution": "SELECT SUM(amount) AS total_revenue\nFROM orders;",
+      "explanation": "SUM aggregates all values in the amount column."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "🌍",
+      "title": "Users per Country",
+      "description": "Count how many users are in each country.",
+      "solution": "SELECT \n    country,\n    COUNT(*) AS user_count\nFROM users\nGROUP BY country\nORDER BY user_count DESC;",
+      "explanation": "GROUP BY creates one row per unique country value, and COUNT aggregates within each group."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "👤",
+      "title": "User Order Statistics",
+      "description": "For each user, calculate their total orders, total spent, and average order value.",
+      "solution": "SELECT \n    user_id,\n    COUNT(*) AS order_count,\n    SUM(amount) AS total_spent,\n    AVG(amount) AS avg_order_value\nFROM orders\nGROUP BY user_id\nORDER BY total_spent DESC;",
+      "explanation": "GROUP BY user_id creates one row per user, with aggregated metrics calculated for each user's orders."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "🎯",
+      "title": "High-Value User Segments",
+      "description": "Find users who have made at least 2 orders and spent over $500 total, with average order value over $200.",
+      "solution": "SELECT \n    user_id,\n    COUNT(*) AS order_count,\n    SUM(amount) AS total_spent,\n    AVG(amount) AS avg_order\nFROM orders\nGROUP BY user_id\nHAVING \n    COUNT(*) >= 2\n    AND SUM(amount) > 500\n    AND AVG(amount) > 200\nORDER BY total_spent DESC;",
+      "explanation": "HAVING filters groups after aggregation, unlike WHERE which filters before. Perfect for finding segments based on aggregated metrics."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "🔬",
+      "title": "Comprehensive User Features for ML",
+      "description": "Create a feature-rich dataset with RFM (Recency, Frequency, Monetary) metrics and behavioral indicators for each user.",
+      "solution": "SELECT \n    u.user_id,\n    u.name,\n    u.country,\n    u.premium,\n    COUNT(o.order_id) AS total_orders,\n    COALESCE(SUM(o.amount), 0) AS lifetime_value,\n    COALESCE(AVG(o.amount), 0) AS avg_order_value,\n    MIN(o.order_date) AS first_order_date,\n    MAX(o.order_date) AS last_order_date,\n    CURRENT_DATE - MAX(o.order_date) AS days_since_last_order,\n    SUM(CASE WHEN o.amount > 500 THEN 1 ELSE 0 END) AS high_value_orders,\n    COUNT(DISTINCT o.product) AS unique_products\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.name, u.country, u.premium\nORDER BY lifetime_value DESC;",
+      "explanation": "Combines LEFT JOIN with GROUP BY to create ML features. Uses COALESCE to handle users with no orders, CASE for conditional aggregations, and calculates RFM metrics for customer segmentation."
+    }
+  ]
+}

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Window Functions - SQL Mastery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="../css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="burger" onclick="toggleSidebar()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="title">SQL Mastery</div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-items">
+            <a href="../index.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">Home</div>
+            </a>
+            <a href="fundamentals.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">Fundamentals</div>
+            </a>
+            <a href="filtering.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-text">Filtering</div>
+            </a>
+            <a href="aggregation.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📊</div>
+                <div class="nav-text">Aggregation</div>
+            </a>
+            <a href="joins.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🔗</div>
+                <div class="nav-text">Joins</div>
+            </a>
+            <a href="subqueries.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🎯</div>
+                <div class="nav-text">Subqueries</div>
+            </a>
+            <a href="window-functions.html" class="nav-item active" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">📈</div>
+                <div class="nav-text">Window Functions</div>
+            </a>
+            <a href="advanced.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">⚡</div>
+                <div class="nav-text">Advanced</div>
+            </a>
+            <a href="ml-focus.html" class="nav-item" style="text-decoration: none; color: inherit;">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-text">ML Focus</div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main">
+        <div class="section-header">
+            <h1 class="section-title">Window Functions</h1>
+            <p class="section-subtitle">Advanced analytics without grouping</p>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">📈</span>
+                ROW_NUMBER, RANK, DENSE_RANK
+            </h2>
+            <div class="card-content">
+                <p>Window functions perform calculations across rows while keeping all row details (unlike GROUP BY which collapses rows).</p>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: ROW_NUMBER Basics</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Rank each user's orders by amount to find their top purchase.
+                </p>
+                <pre><code class="language-sql">-- ROW_NUMBER assigns unique sequential numbers
+SELECT 
+    user_id,
+    order_id,
+    product,
+    amount,
+    order_date,
+    -- Assign row number within each user's orders
+    ROW_NUMBER() OVER (
+        PARTITION BY user_id   -- Separate numbering for each user
+        ORDER BY amount DESC   -- Highest amount gets #1
+    ) AS order_rank
+FROM orders
+ORDER BY user_id, order_rank;
+
+-- PARTITION BY: Creates separate "windows" for each user
+-- ORDER BY: Determines the ranking order
+-- Result: Each user's orders numbered 1, 2, 3...</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: RANK vs DENSE_RANK</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Find the top 3 highest-value orders per user, handling ties appropriately.
+                </p>
+                <pre><code class="language-sql">-- Compare different ranking functions
+SELECT 
+    user_id,
+    order_id,
+    amount,
+    -- ROW_NUMBER: Always unique (1,2,3,4,5)
+    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY amount DESC) AS row_num,
+    
+    -- RANK: Ties get same rank, then skips (1,2,2,4,5)
+    RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) AS rank,
+    
+    -- DENSE_RANK: Ties get same rank, no skip (1,2,2,3,4)
+    DENSE_RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) AS dense_rank
+FROM orders
+ORDER BY user_id, amount DESC;
+
+-- Get only top 3 orders per user
+SELECT *
+FROM (
+    SELECT 
+        user_id,
+        order_id,
+        product,
+        amount,
+        ROW_NUMBER() OVER (
+            PARTITION BY user_id 
+            ORDER BY amount DESC
+        ) AS rn
+    FROM orders
+) ranked
+WHERE rn <= 3;  -- Filter after ranking
+
+-- Use case: "Show user's top 3 most expensive purchases"</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex Ranking Features</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Create sequence-based features: is this order in top 25%? What percentile? Is it getting better over time?
+                </p>
+                <pre><code class="language-sql">-- Generate sophisticated ranking features
+SELECT 
+    user_id,
+    order_id,
+    product,
+    amount,
+    order_date,
+    
+    -- Basic rankings
+    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date) AS order_sequence,
+    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY amount DESC) AS value_rank,
+    
+    -- Percentile ranking (0-1 scale)
+    PERCENT_RANK() OVER (PARTITION BY user_id ORDER BY amount) AS amount_percentile,
+    
+    -- Divide into quartiles/deciles
+    NTILE(4) OVER (PARTITION BY user_id ORDER BY amount) AS amount_quartile,
+    NTILE(10) OVER (PARTITION BY user_id ORDER BY order_date) AS time_decile,
+    
+    -- Is this a top performer?
+    CASE 
+        WHEN PERCENT_RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) <= 0.25 
+        THEN 'Top 25%'
+        WHEN PERCENT_RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) <= 0.50 
+        THEN 'Top 50%'
+        ELSE 'Bottom 50%'
+    END AS value_segment,
+    
+    -- Compare to user's first order
+    amount - FIRST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS growth_from_first_order,
+    
+    -- Count orders so far (cumulative)
+    COUNT(*) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS orders_so_far
+FROM orders
+ORDER BY user_id, order_date;
+
+-- These features are gold for ML:
+-- - User purchase progression
+-- - Spending trajectory
+-- - Engagement patterns</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>Window functions are perfect for time-series features: "user's Nth purchase amount", "days between orders", "running average", etc. They preserve row-level detail unlike GROUP BY.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">📊</span>
+                Aggregate Window Functions
+            </h2>
+            <div class="card-content">
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: Running Totals</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Calculate cumulative revenue over time for growth analysis.
+                </p>
+                <pre><code class="language-sql">-- Running total (cumulative sum)
+SELECT 
+    order_id,
+    user_id,
+    order_date,
+    amount,
+    -- Cumulative sum up to current row
+    SUM(amount) OVER (
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS running_total,
+    -- Can also write as:
+    SUM(amount) OVER (ORDER BY order_date) AS running_total_short
+FROM orders
+ORDER BY order_date;
+
+-- Running total per user
+SELECT 
+    order_id,
+    user_id,
+    order_date,
+    amount,
+    SUM(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS user_running_total
+FROM orders
+ORDER BY user_id, order_date;
+
+-- Track: "How much has this user spent so far?"</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: Moving Averages</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Calculate 7-day and 30-day moving averages for trend analysis.
+                </p>
+                <pre><code class="language-sql">-- Moving averages with window frames
+SELECT 
+    order_date,
+    user_id,
+    amount,
+    
+    -- Average of last 3 orders (including current)
+    AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS moving_avg_3_orders,
+    
+    -- Average of current and next 2 orders (forward looking)
+    AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN CURRENT ROW AND 2 FOLLOWING
+    ) AS forward_avg_3_orders,
+    
+    -- Centered moving average
+    AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+    ) AS centered_avg_3_orders,
+    
+    -- Compare to overall user average
+    AVG(amount) OVER (PARTITION BY user_id) AS user_overall_avg,
+    
+    -- Deviation from moving average
+    amount - AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS deviation_from_trend
+FROM orders
+ORDER BY user_id, order_date;
+
+-- Window frame options:
+-- ROWS: Physical rows (count)
+-- RANGE: Logical range (values)
+-- UNBOUNDED PRECEDING: Start of partition
+-- CURRENT ROW: Current row
+-- N PRECEDING/FOLLOWING: N rows before/after</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Complex Aggregations & Comparisons</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Build features comparing each order to historical patterns for anomaly detection.
+                </p>
+                <pre><code class="language-sql">-- Comprehensive window analytics
+SELECT 
+    order_id,
+    user_id,
+    product,
+    order_date,
+    amount,
+    
+    -- Historical statistics (all previous orders)
+    AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+    ) AS historical_avg,
+    
+    STDDEV(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+    ) AS historical_std,
+    
+    -- Z-score for current order (anomaly detection)
+    CASE 
+        WHEN STDDEV(amount) OVER (
+            PARTITION BY user_id
+            ORDER BY order_date
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+        ) > 0 THEN
+            (amount - AVG(amount) OVER (
+                PARTITION BY user_id
+                ORDER BY order_date
+                ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+            )) / STDDEV(amount) OVER (
+                PARTITION BY user_id
+                ORDER BY order_date
+                ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+            )
+        ELSE NULL
+    END AS z_score,
+    
+    -- Trend indicators
+    amount > AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN 3 PRECEDING AND 1 PRECEDING
+    ) AS above_recent_avg,
+    
+    -- Percentage change from last order
+    100.0 * (amount - LAG(amount) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    )) / NULLIF(LAG(amount) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    ), 0) AS pct_change_from_last,
+    
+    -- Running statistics
+    COUNT(*) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS order_count_so_far,
+    
+    MIN(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS min_so_far,
+    
+    MAX(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS max_so_far
+FROM orders
+ORDER BY user_id, order_date;
+
+-- Flag anomalies: |z_score| > 2 indicates unusual behavior</code></pre>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title">
+                <span class="card-icon">↔️</span>
+                LAG, LEAD, FIRST_VALUE, LAST_VALUE
+            </h2>
+            <div class="card-content">
+                <h3 style="margin: 20px 0 12px 0; color: var(--success);">✓ Easy: LAG & LEAD</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Calculate time between consecutive orders for frequency analysis.
+                </p>
+                <pre><code class="language-sql">-- Access previous and next row values
+SELECT 
+    user_id,
+    order_id,
+    order_date,
+    amount,
+    
+    -- Previous order details
+    LAG(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS previous_order_date,
+    
+    LAG(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS previous_order_amount,
+    
+    -- Days since last order
+    order_date - LAG(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS days_since_last_order,
+    
+    -- Next order details (for forward-looking features)
+    LEAD(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) AS next_order_date,
+    
+    -- Days until next order
+    LEAD(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+    ) - order_date AS days_until_next_order
+FROM orders
+ORDER BY user_id, order_date;
+
+-- LAG(column, n): Access value n rows before
+-- LEAD(column, n): Access value n rows after
+-- Default n = 1</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--accent-purple);">◉ Medium: FIRST_VALUE & LAST_VALUE</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Compare each order to user's first and most recent orders.
+                </p>
+                <pre><code class="language-sql">-- Access first and last values in window
+SELECT 
+    user_id,
+    order_id,
+    order_date,
+    amount,
+    
+    -- First order ever
+    FIRST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS first_order_amount,
+    
+    FIRST_VALUE(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS first_order_date,
+    
+    -- Most recent order
+    LAST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS latest_order_amount,
+    
+    -- Growth metrics
+    amount - FIRST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS amount_change_from_first,
+    
+    100.0 * (amount - FIRST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    )) / NULLIF(FIRST_VALUE(amount) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ), 0) AS pct_growth_from_first
+FROM orders
+ORDER BY user_id, order_date;
+
+-- Note: LAST_VALUE needs full window frame or it only sees current row!</code></pre>
+                
+                <h3 style="margin: 20px 0 12px 0; color: var(--neon-pink);">★ Hard: Cohort Analysis with Windows</h3>
+                <p style="background: rgba(0, 212, 255, 0.05); padding: 12px; border-radius: 6px; margin: 12px 0;">
+                    <strong>Problem:</strong> Build a complete user journey dataset for churn prediction modeling.
+                </p>
+                <pre><code class="language-sql">-- Comprehensive user journey features
+SELECT 
+    user_id,
+    order_id,
+    product,
+    order_date,
+    amount,
+    
+    -- Position in journey
+    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date) AS order_number,
+    
+    -- Time-based features
+    order_date - FIRST_VALUE(order_date) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS days_since_first_order,
+    
+    LAG(order_date) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    ) AS prev_order_date,
+    
+    order_date - LAG(order_date) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    ) AS days_since_prev_order,
+    
+    -- Moving average of inter-order time
+    AVG(order_date - LAG(order_date) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    )) OVER (
+        PARTITION BY user_id 
+        ORDER BY order_date
+        ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+    ) AS avg_inter_order_days,
+    
+    -- Value trajectory
+    amount - LAG(amount) OVER (
+        PARTITION BY user_id ORDER BY order_date
+    ) AS value_change,
+    
+    AVG(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+    ) AS moving_avg_value,
+    
+    -- Is spending accelerating?
+    CASE 
+        WHEN ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date) = 1 THEN NULL
+        WHEN order_date - LAG(order_date) OVER (
+            PARTITION BY user_id ORDER BY order_date
+        ) < AVG(order_date - LAG(order_date) OVER (
+            PARTITION BY user_id ORDER BY order_date
+        )) OVER (
+            PARTITION BY user_id 
+            ORDER BY order_date
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+        ) THEN 'Accelerating'
+        ELSE 'Slowing'
+    END AS purchase_frequency_trend,
+    
+    -- Product diversity
+    COUNT(DISTINCT product) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS unique_products_so_far,
+    
+    -- Cumulative value
+    SUM(amount) OVER (
+        PARTITION BY user_id
+        ORDER BY order_date
+    ) AS cumulative_value
+FROM orders
+ORDER BY user_id, order_date;
+
+-- This creates a feature-rich event stream for:
+-- - Sequential modeling (LSTM, GRU)
+-- - Churn prediction
+-- - Next purchase prediction
+-- - Customer lifetime value forecasting</code></pre>
+                
+                <div class="info-box">
+                    <div class="info-box-title">💡 ML Engineer Tip</div>
+                    <p>LAG/LEAD are essential for creating "deltas" and "rates of change" features. Use them to capture momentum, velocity, and acceleration in user behavior.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Practice Problems Section -->
+        <div id="problems-container" data-json-path="../data/window-functions.json"></div>
+        
+        <div class="nav-buttons">
+            <a href="subqueries.html" class="nav-btn" style="text-decoration: none;">← Subqueries</a>
+            <a href="advanced.html" class="nav-btn" style="text-decoration: none;">Next: Advanced →</a>
+        </div>
+    </div>
+    
+    <!-- Reference Panel -->
+    <div class="reference-panel" id="reference-panel">
+        <h3 class="reference-title">📋 Sample Data Reference</h3>
+        <div class="reference-table-section">
+            <h4>users table</h4>
+            <table>
+                <thead>
+                    <tr><th>user_id</th><th>name</th><th>age</th><th>country</th><th>signup_date</th><th>premium</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>Alice</td><td>28</td><td>USA</td><td>2024-01-15</td><td>true</td></tr>
+                    <tr><td>2</td><td>Bob</td><td>34</td><td>UK</td><td>2024-02-20</td><td>false</td></tr>
+                    <tr><td>3</td><td>Charlie</td><td>25</td><td>USA</td><td>2024-03-10</td><td>true</td></tr>
+                    <tr><td>4</td><td>Diana</td><td>31</td><td>Canada</td><td>2024-01-22</td><td>true</td></tr>
+                    <tr><td>5</td><td>Eve</td><td>29</td><td>UK</td><td>2024-04-05</td><td>false</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="reference-table-section">
+            <h4>orders table</h4>
+            <table>
+                <thead>
+                    <tr><th>order_id</th><th>user_id</th><th>product</th><th>amount</th><th>order_date</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>101</td><td>1</td><td>Laptop</td><td>1200</td><td>2024-02-01</td></tr>
+                    <tr><td>102</td><td>1</td><td>Mouse</td><td>25</td><td>2024-02-15</td></tr>
+                    <tr><td>103</td><td>2</td><td>Keyboard</td><td>75</td><td>2024-03-01</td></tr>
+                    <tr><td>104</td><td>3</td><td>Monitor</td><td>350</td><td>2024-03-20</td></tr>
+                    <tr><td>105</td><td>3</td><td>Laptop</td><td>1500</td><td>2024-04-10</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <button class="reference-toggle" onclick="toggleReference()" title="Toggle Reference Tables">📚</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/problem-renderer.js"></script>
+</body>
+</html>

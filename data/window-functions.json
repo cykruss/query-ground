@@ -1,0 +1,53 @@
+{
+  "section": "Window Functions",
+  "problems": [
+    {
+      "difficulty": "Easy",
+      "icon": "🏆",
+      "title": "Rank Orders by Amount",
+      "description": "Rank each user's orders by amount to identify their top purchases.",
+      "solution": "SELECT \n    user_id,\n    order_id,\n    product,\n    amount,\n    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY amount DESC) AS rank\nFROM orders\nORDER BY user_id, rank;",
+      "explanation": "ROW_NUMBER assigns unique sequential numbers within each user's partition. PARTITION BY user_id creates separate rankings for each user. Essential for finding top-N items per group."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "🎯",
+      "title": "Top 3 Orders Per User with RANK",
+      "description": "Find the top 3 highest-value orders for each user, handling ties appropriately.",
+      "solution": "WITH ranked_orders AS (\n    SELECT \n        user_id,\n        product,\n        amount,\n        order_date,\n        RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) AS rank,\n        DENSE_RANK() OVER (PARTITION BY user_id ORDER BY amount DESC) AS dense_rank\n    FROM orders\n)\nSELECT *\nFROM ranked_orders\nWHERE rank <= 3\nORDER BY user_id, rank;",
+      "explanation": "RANK() gives same rank to ties, with gaps (1,2,2,4). DENSE_RANK() has no gaps (1,2,2,3). Use CTE with WHERE to filter ranked results (can't use window functions directly in WHERE)."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "📈",
+      "title": "Comprehensive Sequence Features",
+      "description": "Create sequence-based features: percentiles, quartiles, and order progression patterns for ML.",
+      "solution": "SELECT \n    user_id,\n    order_id,\n    amount,\n    order_date,\n    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date) AS order_sequence,\n    NTILE(4) OVER (PARTITION BY user_id ORDER BY amount) AS amount_quartile,\n    PERCENT_RANK() OVER (PARTITION BY user_id ORDER BY amount) AS amount_percentile,\n    amount - LAG(amount) OVER (PARTITION BY user_id ORDER BY order_date) AS amount_change,\n    CASE \n        WHEN amount > LAG(amount) OVER (PARTITION BY user_id ORDER BY order_date) THEN 'Increasing'\n        WHEN amount < LAG(amount) OVER (PARTITION BY user_id ORDER BY order_date) THEN 'Decreasing'\n        ELSE 'Stable'\n    END AS spending_trend,\n    AVG(amount) OVER (PARTITION BY user_id ORDER BY order_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg_3_orders\nFROM orders\nORDER BY user_id, order_date;",
+      "explanation": "Combines multiple window functions for rich time-series features. NTILE creates quartiles, PERCENT_RANK shows relative position, LAG tracks changes, moving average smooths trends. Perfect for behavioral analysis and churn prediction."
+    },
+    {
+      "difficulty": "Easy",
+      "icon": "💰",
+      "title": "Cumulative Revenue",
+      "description": "Calculate cumulative revenue over time for growth analysis.",
+      "solution": "SELECT \n    order_date,\n    amount,\n    SUM(amount) OVER (ORDER BY order_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumulative_revenue\nFROM orders\nORDER BY order_date;",
+      "explanation": "SUM() with OVER creates running total. ROWS BETWEEN defines the window frame. UNBOUNDED PRECEDING means from the start to current row. Useful for tracking growth metrics."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "📊",
+      "title": "Moving Averages for Trends",
+      "description": "Calculate 7-day and 30-day moving averages for trend analysis.",
+      "solution": "SELECT \n    order_date,\n    amount,\n    AVG(amount) OVER (\n        ORDER BY order_date \n        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n    ) AS moving_avg_7,\n    AVG(amount) OVER (\n        ORDER BY order_date \n        ROWS BETWEEN 29 PRECEDING AND CURRENT ROW\n    ) AS moving_avg_30\nFROM orders\nORDER BY order_date;",
+      "explanation": "Moving averages smooth out short-term fluctuations. 'N PRECEDING' includes the N previous rows plus current row. Widely used for time-series forecasting and anomaly detection."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "🔍",
+      "title": "Anomaly Detection Features",
+      "description": "Build features comparing each order to historical patterns for anomaly detection using z-scores.",
+      "solution": "SELECT \n    user_id,\n    order_id,\n    amount,\n    order_date,\n    AVG(amount) OVER (PARTITION BY user_id) AS user_avg,\n    STDDEV(amount) OVER (PARTITION BY user_id) AS user_stddev,\n    (amount - AVG(amount) OVER (PARTITION BY user_id)) / NULLIF(STDDEV(amount) OVER (PARTITION BY user_id), 0) AS z_score,\n    PERCENT_RANK() OVER (PARTITION BY user_id ORDER BY amount) AS percentile_rank,\n    CASE \n        WHEN ABS((amount - AVG(amount) OVER (PARTITION BY user_id)) / NULLIF(STDDEV(amount) OVER (PARTITION BY user_id), 0)) > 2 THEN 'Anomaly'\n        ELSE 'Normal'\n    END AS anomaly_flag,\n    amount / NULLIF(AVG(amount) OVER (PARTITION BY user_id ORDER BY order_date ROWS BETWEEN 4 PRECEDING AND 1 PRECEDING), 0) AS vs_recent_avg\nFROM orders\nORDER BY user_id, order_date;",
+      "explanation": "Z-score measures how many standard deviations away from mean (|z| > 2 typically indicates anomaly). NULLIF prevents division by zero. Compares each order against user's historical behavior and recent trend. Essential for fraud detection and unusual activity alerts."
+    }
+  ]
+}

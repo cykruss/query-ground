@@ -1,0 +1,29 @@
+{
+  "section": "Advanced Topics",
+  "problems": [
+    {
+      "difficulty": "Medium",
+      "icon": "⚡",
+      "title": "Multi-Step Feature Engineering with CTEs",
+      "description": "Use CTEs to organize complex feature engineering steps for user behavior analysis.",
+      "solution": "WITH user_stats AS (\n    SELECT \n        user_id,\n        COUNT(*) AS order_count,\n        SUM(amount) AS total_spent,\n        AVG(amount) AS avg_order\n    FROM orders\n    GROUP BY user_id\n),\nhigh_value_users AS (\n    SELECT \n        user_id,\n        order_count,\n        total_spent\n    FROM user_stats\n    WHERE total_spent > 1000\n)\nSELECT \n    u.name,\n    u.country,\n    h.order_count,\n    h.total_spent\nFROM users u\nINNER JOIN high_value_users h ON u.user_id = h.user_id\nORDER BY h.total_spent DESC;",
+      "explanation": "CTEs (Common Table Expressions) break complex queries into logical steps. Each CTE is a named temporary result set. Makes feature engineering readable and maintainable. Can be referenced multiple times in the main query."
+    },
+    {
+      "difficulty": "Medium",
+      "icon": "🔀",
+      "title": "Combine Data Sources with UNION",
+      "description": "Combine results from web users and mobile users tables for unified analysis.",
+      "solution": "SELECT \n    user_id,\n    name,\n    email,\n    'web' AS source\nFROM web_users\nUNION ALL\nSELECT \n    user_id,\n    name,\n    email,\n    'mobile' AS source\nFROM mobile_users\nORDER BY user_id;",
+      "explanation": "UNION ALL combines results from multiple queries, keeping duplicates. UNION (without ALL) removes duplicates but is slower. Both queries must have same number and types of columns. Add a source label to track origin."
+    },
+    {
+      "difficulty": "Hard",
+      "icon": "🔄",
+      "title": "Recursive CTE for Hierarchies",
+      "description": "Use recursive CTE to traverse organizational hierarchy or category trees.",
+      "solution": "WITH RECURSIVE category_tree AS (\n    -- Base case: root categories\n    SELECT \n        category_id,\n        category_name,\n        parent_category_id,\n        1 AS level,\n        CAST(category_name AS VARCHAR(1000)) AS path\n    FROM categories\n    WHERE parent_category_id IS NULL\n    \n    UNION ALL\n    \n    -- Recursive case: child categories\n    SELECT \n        c.category_id,\n        c.category_name,\n        c.parent_category_id,\n        ct.level + 1,\n        CAST(ct.path || ' > ' || c.category_name AS VARCHAR(1000))\n    FROM categories c\n    INNER JOIN category_tree ct ON c.parent_category_id = ct.category_id\n)\nSELECT \n    category_id,\n    REPEAT('  ', level - 1) || category_name AS indented_name,\n    level,\n    path\nFROM category_tree\nORDER BY path;",
+      "explanation": "Recursive CTEs have two parts: base case (starting point) and recursive case (refers to itself). Useful for hierarchies, graphs, and tree structures. Level tracks depth, path shows full hierarchy. Essential for organizational charts, category navigation, and bill-of-materials."
+    }
+  ]
+}
